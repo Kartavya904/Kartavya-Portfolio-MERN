@@ -82,28 +82,8 @@ const Loading = ({ isBatterySavingOn, setIsBatterySavingOn, onComplete }) => {
           }
           preloadMustLoadImages();
 
-          // Start dynamic images preloading (non-blocking)
-          async function preloadDynamicImages() {
-            try {
-              fetch(`${process.env.REACT_APP_API_URI}/dynamic-images`)
-                .then((response) => response.json())
-                .then((urls) => {
-                  urls.forEach((url) => {
-                    const link = document.createElement("link");
-                    link.rel = "preload";
-                    link.as = "image";
-                    link.href = url;
-                    document.head.appendChild(link);
-                  });
-                })
-                .catch((err) =>
-                  console.error("Error preloading dynamic images:", err)
-                );
-            } catch (error) {
-              console.error("Error preloading dynamic images:", error);
-            }
-          }
-          preloadDynamicImages();
+          // Dynamic images will be lazy-loaded when they come into view
+          // No need to preload all images upfront
         }
       } catch (error) {
         console.error("Error checking backend or database status:", error);

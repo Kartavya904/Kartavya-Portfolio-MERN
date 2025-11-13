@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, memo } from "react";
 import { motion } from "framer-motion";
 import { FaCrown } from "react-icons/fa";
 import { zoomIn } from "../../services/variants";
@@ -409,7 +409,7 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
   );
 }
 
-export default ProjectsListView;
+export default memo(ProjectsListView);
 
 /* -------------------------------------------------------
    Styled Components for the "Learn More →" Button 

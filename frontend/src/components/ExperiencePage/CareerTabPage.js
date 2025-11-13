@@ -170,6 +170,7 @@ const CareerTabPage = ({ addTab, isBatterySavingOn }) => {
                           src={experience.experienceImages[0]}
                           alt=""
                           className="career-image-content"
+                          loading="lazy"
                         />
                       </div>
                       <div className="career-details">

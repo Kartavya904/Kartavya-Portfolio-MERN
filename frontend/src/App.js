@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  Suspense,
+  lazy,
+} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { animated } from "@react-spring/web";
 import axios from "axios";
@@ -6,14 +13,17 @@ import { AppLoad } from "./services/variants";
 import "./App.css";
 import Links from "./components/SpecialComponents/Links";
 import NavBar from "./components/SpecialComponents/NavBar";
-import HomePage from "./components/HomePage/HomePage";
-import AboutPage from "./components/AboutPage/AboutPage";
-import SkillPage from "./components/SkillPage/SkillPage";
-import ExperiencePage from "./components/ExperiencePage/ExperiencePage";
-import ProjectPage from "./components/ProjectPage/ProjectPage";
-import ContactPage from "./components/ContactPage/ContactPage";
-import WindowModal from "./components/WindowModal/WindowModal";
 import PowerMode from "./components/SpecialComponents/PowerMode";
+// Lazy load major page components for code splitting
+const HomePage = lazy(() => import("./components/HomePage/HomePage"));
+const AboutPage = lazy(() => import("./components/AboutPage/AboutPage"));
+const SkillPage = lazy(() => import("./components/SkillPage/SkillPage"));
+const ExperiencePage = lazy(() =>
+  import("./components/ExperiencePage/ExperiencePage")
+);
+const ProjectPage = lazy(() => import("./components/ProjectPage/ProjectPage"));
+const ContactPage = lazy(() => import("./components/ContactPage/ContactPage"));
+const WindowModal = lazy(() => import("./components/WindowModal/WindowModal"));
 // import { cleanupEventListeners } from "./services/eventListenerRegistry";
 
 function App({ isBatterySavingOn, setIsBatterySavingOn }) {
@@ -61,7 +71,7 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
   //   return () => clearInterval(cleanupInterval);
   // }, []);
 
-  const addTab = (type, data) => {
+  const addTab = useCallback((type, data) => {
     if (!data || typeof data !== "object") {
       console.error("Invalid data passed to addTab:", data);
       return;
@@ -143,14 +153,14 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
     });
 
     setIsClosed(false);
-  };
+  }, []);
 
-  const scrollToTop = () => {
+  const scrollToTop = useCallback(() => {
     window.scrollTo({
       top: 0,
       behavior: "smooth",
     });
-  };
+  }, []);
 
   // add this at the top of your component file
   const delay = useCallback(
@@ -319,11 +329,11 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
         setQuery("");
       }
     },
-    [chatStarted, conversationMemory, delay, queriesSent]
+    [chatStarted, conversationMemory, delay, queriesSent, API_URL]
   );
 
   // --- Stop generation handler ---
-  const stopGenerating = () => {
+  const stopGenerating = useCallback(() => {
     setChatHistory((h) =>
       h.map((msg) =>
         msg.id === latestAIId
@@ -337,7 +347,7 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
 
     // 2) clear the loading spinner
     setLoading(false);
-  };
+  }, [latestAIId]);
 
   useEffect(() => {
     const onScroll = () => {
@@ -363,12 +373,14 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
           scrolled={scrolled}
         />
         <NavBar isBatterySavingOn={isBatterySavingOn} addTab={addTab} />
-        <HomePage
-          isBatterySavingOn={isBatterySavingOn}
-          scrolled={scrolled}
-          addTab={addTab}
-          sendQuery={sendQuery}
-        />
+        <Suspense fallback={null}>
+          <HomePage
+            isBatterySavingOn={isBatterySavingOn}
+            scrolled={scrolled}
+            addTab={addTab}
+            sendQuery={sendQuery}
+          />
+        </Suspense>
         {/* {isWindowModalVisible && (
           <>
                   <AboutPage isBatterySavingOn={isBatterySavingOn} />
@@ -377,15 +389,19 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
         <ExperiencePage addTab={addTab} isBatterySavingOn={isBatterySavingOn} />
           </>
         )} */}
-        <AboutPage
-          isBatterySavingOn={isBatterySavingOn}
-          isWindowModalVisible={isWindowModalVisible}
-          addTab={addTab}
-        />
-        <SkillPage
-          isBatterySavingOn={isBatterySavingOn}
-          isWindowModalVisible={isWindowModalVisible}
-        />
+        <Suspense fallback={null}>
+          <AboutPage
+            isBatterySavingOn={isBatterySavingOn}
+            isWindowModalVisible={isWindowModalVisible}
+            addTab={addTab}
+          />
+        </Suspense>
+        <Suspense fallback={null}>
+          <SkillPage
+            isBatterySavingOn={isBatterySavingOn}
+            isWindowModalVisible={isWindowModalVisible}
+          />
+        </Suspense>
         <div
           style={{
             display: "sticky",
@@ -397,18 +413,24 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
             overflow: "show",
           }}
         >
-          <ProjectPage
+          <Suspense fallback={null}>
+            <ProjectPage
+              addTab={addTab}
+              isBatterySavingOn={isBatterySavingOn}
+              isWindowModalVisible={isWindowModalVisible}
+            />
+          </Suspense>
+        </div>
+        <Suspense fallback={null}>
+          <ExperiencePage
             addTab={addTab}
             isBatterySavingOn={isBatterySavingOn}
             isWindowModalVisible={isWindowModalVisible}
           />
-        </div>
-        <ExperiencePage
-          addTab={addTab}
-          isBatterySavingOn={isBatterySavingOn}
-          isWindowModalVisible={isWindowModalVisible}
-        />
-        <ContactPage isBatterySavingOn={isBatterySavingOn} addTab={addTab} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <ContactPage isBatterySavingOn={isBatterySavingOn} addTab={addTab} />
+        </Suspense>
         <Links
           isBatterySavingOn={isBatterySavingOn}
           isWindowModalVisible={isWindowModalVisible}
@@ -465,49 +487,51 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
             </motion.div>
           </div>
         )}
-        <WindowModal
-          tabs={tabs}
-          addTab={addTab}
-          setTabs={setTabs}
-          isClosed={isClosed}
-          setIsClosed={setIsClosed}
-          isMinimized={isMinimized}
-          setIsMinimized={setIsMinimized}
-          lastActiveIndex={lastActiveIndex}
-          setLastActiveIndex={setLastActiveIndex}
-          scrolled={scrolled}
-          isBatterySavingOn={isBatterySavingOn}
-          loggedIn={loggedIn}
-          setLoggedIn={setLoggedIn}
-          isWindowModalVisible={isWindowModalVisible}
-          setIsWindowModalVisible={setIsWindowModalVisible}
-          API_URL={API_URL}
-          MAX_QUERIES={MAX_QUERIES}
-          TYPING_DELAY={TYPING_DELAY}
-          chatStarted={chatStarted}
-          setChatStarted={setChatStarted}
-          chatHistory={chatHistory}
-          setChatHistory={setChatHistory}
-          loading={loading}
-          setLoading={setLoading}
-          query={query}
-          setQuery={setQuery}
-          interimQuery={interimQuery}
-          setInterimQuery={setInterimQuery}
-          followUpSuggestions={followUpSuggestions}
-          setFollowUpSuggestions={setFollowUpSuggestions}
-          conversationMemory={conversationMemory}
-          setConversationMemory={setConversationMemory}
-          latestAIId={latestAIId}
-          setLatestAIId={setLatestAIId}
-          errorMsg={errorMsg}
-          setErrorMsg={setErrorMsg}
-          queriesSent={queriesSent}
-          setQueriesSent={setQueriesSent}
-          cancelRef={cancelRef}
-          sendQuery={sendQuery}
-          stopGenerating={stopGenerating}
-        />
+        <Suspense fallback={null}>
+          <WindowModal
+            tabs={tabs}
+            addTab={addTab}
+            setTabs={setTabs}
+            isClosed={isClosed}
+            setIsClosed={setIsClosed}
+            isMinimized={isMinimized}
+            setIsMinimized={setIsMinimized}
+            lastActiveIndex={lastActiveIndex}
+            setLastActiveIndex={setLastActiveIndex}
+            scrolled={scrolled}
+            isBatterySavingOn={isBatterySavingOn}
+            loggedIn={loggedIn}
+            setLoggedIn={setLoggedIn}
+            isWindowModalVisible={isWindowModalVisible}
+            setIsWindowModalVisible={setIsWindowModalVisible}
+            API_URL={API_URL}
+            MAX_QUERIES={MAX_QUERIES}
+            TYPING_DELAY={TYPING_DELAY}
+            chatStarted={chatStarted}
+            setChatStarted={setChatStarted}
+            chatHistory={chatHistory}
+            setChatHistory={setChatHistory}
+            loading={loading}
+            setLoading={setLoading}
+            query={query}
+            setQuery={setQuery}
+            interimQuery={interimQuery}
+            setInterimQuery={setInterimQuery}
+            followUpSuggestions={followUpSuggestions}
+            setFollowUpSuggestions={setFollowUpSuggestions}
+            conversationMemory={conversationMemory}
+            setConversationMemory={setConversationMemory}
+            latestAIId={latestAIId}
+            setLatestAIId={setLatestAIId}
+            errorMsg={errorMsg}
+            setErrorMsg={setErrorMsg}
+            queriesSent={queriesSent}
+            setQueriesSent={setQueriesSent}
+            cancelRef={cancelRef}
+            sendQuery={sendQuery}
+            stopGenerating={stopGenerating}
+          />
+        </Suspense>
       </motion.div>
     </AnimatePresence>
   );

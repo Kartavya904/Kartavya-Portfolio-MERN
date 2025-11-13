@@ -78,6 +78,7 @@ function AboutPage({ isBatterySavingOn, isWindowModalVisible, addTab }) {
                 src={`${process.env.PUBLIC_URL}/Kartavya-Profile-Photo.webp`}
                 className="about-image"
                 alt="Profile"
+                loading="lazy"
                 variants={isBatterySavingOn ? {} : fadeIn("right", 200, 0)}
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}

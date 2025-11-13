@@ -205,13 +205,20 @@ const getDocumentByLink = async (collectionName, linkField, linkValue) => {
 
 // Global in-memory cache object for collections
 const cache = {};
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 1 day in milliseconds
 
 /**
- * Helper: fetch all documents from a collection using caching.
- * If a cached copy exists, return that; otherwise, query the DB and cache the result.
+ * Helper: fetch all documents from a collection using caching with TTL.
+ * If a cached copy exists and is not expired, return that; otherwise, query the DB and cache the result.
  */
 const getCachedAllDocuments = async (collectionName) => {
-  if (cache[collectionName] && cache[collectionName].data) {
+  const now = Date.now();
+  if (
+    cache[collectionName] &&
+    cache[collectionName].data &&
+    cache[collectionName].lastUpdated &&
+    now - cache[collectionName].lastUpdated < CACHE_TTL_MS
+  ) {
     // console.log(`Returning cached data for collection: ${collectionName}`);
     return cache[collectionName].data;
   }
@@ -219,9 +226,11 @@ const getCachedAllDocuments = async (collectionName) => {
     `No cached data for collection: ${collectionName}. Querying database...`
   );
   const data = await getAllDocuments(collectionName);
-  cache[collectionName] = { data, lastUpdated: new Date() };
+  cache[collectionName] = { data, lastUpdated: now };
   console.log(
-    `Data for ${collectionName} cached at ${cache[collectionName].lastUpdated}`
+    `Data for ${collectionName} cached at ${new Date(
+      cache[collectionName].lastUpdated
+    )}`
   );
   return data;
 };
@@ -260,7 +269,14 @@ const updateTopLanguagesCache = async () => {
     const languagesArray = await Promise.all(languagePromises);
     for (const languagesData of languagesArray) {
       for (const [language, bytes] of Object.entries(languagesData)) {
-        if (language === "C#" || language === "Rust") continue;
+        if (
+          language === "C#" ||
+          language === "Rust" ||
+          language === "HTML" ||
+          language === "CSS" ||
+          language === "ShaderLab"
+        )
+          continue;
         languageTotals[language] = (languageTotals[language] || 0) + bytes;
         totalBytes += bytes;
       }

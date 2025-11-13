@@ -1,4 +1,4 @@
-import { React, useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import { zoomIn, fadeIn } from "../../services/variants";
 import "../../styles/SkillPage.css";
 import github from "../../assets/img/icons/github.png";
@@ -481,4 +481,4 @@ function SkillPage({ isBatterySavingOn, isWindowModalVisible }) {
   );
 }
 
-export default SkillPage;
+export default memo(SkillPage);

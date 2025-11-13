@@ -171,6 +171,7 @@ const InvolvementTabPage = ({ addTab, isBatterySavingOn }) => {
                           src={involvement.involvementImages[0]}
                           alt=""
                           className="career-image-content"
+                          loading="lazy"
                         />
                       </div>
                       <div className="career-details">

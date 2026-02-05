@@ -25,11 +25,20 @@ const stripMotion = (props) => {
 };
 jest.mock("framer-motion", () => {
   const React = require("react");
-  const tags = ["nav", "div", "button", "ul", "li", "a"];
+  const tags = ["div", "button", "ul", "li", "a"];
   const motion = {};
   tags.forEach((tag) => {
-    motion[tag] = (props) => React.createElement(tag, stripMotion(props), props.children);
+    motion[tag] = (props) =>
+      React.createElement(tag, stripMotion(props), props.children);
   });
+  // nav must forward ref so NavBar's menuRef works (avoids "cannot be given refs" warning)
+  motion.nav = React.forwardRef((props, ref) =>
+    React.createElement(
+      "nav",
+      { ...stripMotion(props), ref },
+      props.children
+    )
+  );
   return { motion };
 });
 

@@ -2,7 +2,7 @@
  * Unit tests for Loading component.
  */
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import Loading from "./Loading";
 
 const matchMediaMock = () => ({
@@ -20,6 +20,9 @@ beforeAll(() => {
 });
 beforeEach(() => {
   window.matchMedia = jest.fn(matchMediaMock);
+  global.fetch = jest.fn(() =>
+    Promise.resolve({ json: () => Promise.resolve([]) })
+  );
 });
 
 // Mock framer-motion (strip animation props so any motion.X renders as X)
@@ -52,7 +55,7 @@ describe("Loading", () => {
     mockOnComplete.mockClear();
   });
 
-  it("renders greeting text", () => {
+  it("renders greeting text", async () => {
     render(
       <Loading
         isBatterySavingOn={false}
@@ -60,10 +63,12 @@ describe("Loading", () => {
         onComplete={mockOnComplete}
       />
     );
-    expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
+    });
   });
 
-  it("renders Connecting to Backend or similar status", () => {
+  it("renders Connecting to Backend or similar status", async () => {
     render(
       <Loading
         isBatterySavingOn={false}
@@ -71,10 +76,12 @@ describe("Loading", () => {
         onComplete={mockOnComplete}
       />
     );
-    const statusElements = screen.getAllByText(
-      /Connecting to Backend|Connecting to Database|Loading Must-Load/i
-    );
-    expect(statusElements.length).toBeGreaterThan(0);
-    expect(statusElements[0]).toBeInTheDocument();
+    await waitFor(() => {
+      const statusElements = screen.getAllByText(
+        /Connecting to Backend|Connecting to Database|Loading Must-Load/i
+      );
+      expect(statusElements.length).toBeGreaterThan(0);
+      expect(statusElements[0]).toBeInTheDocument();
+    });
   });
 });

@@ -5,18 +5,36 @@ import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import Footer from "./Footer";
 
-// Mock framer-motion to avoid animation and use plain elements
-jest.mock("framer-motion", () => ({
-  motion: {
-    footer: (props) => <footer {...props} />,
-    div: (props) => <div {...props} />,
-    ul: (props) => <ul {...props} />,
-    li: (props) => <li {...props} />,
-    button: (props) => <button {...props} />,
-    a: (props) => <a {...props} />,
-    img: (props) => <img {...props} />,
-  },
-}));
+// Strip all framer-motion / animation props so they are not passed to DOM (prevents React warnings)
+const stripMotion = (props) => {
+  const {
+    initial,
+    animate,
+    exit,
+    transition,
+    whileInView,
+    whileHover,
+    whileTap,
+    onTap,
+    variants,
+    drag,
+    dragConstraints,
+    dragElastic,
+    dragTransition,
+    ...rest
+  } = props;
+  return rest;
+};
+jest.mock("framer-motion", () => {
+  const React = require("react");
+  const tags = ["footer", "div", "ul", "li", "button", "a", "img"];
+  const motion = {};
+  tags.forEach((tag) => {
+    motion[tag] = (props) =>
+      React.createElement(tag, stripMotion(props), props.children);
+  });
+  return { motion };
+});
 
 describe("Footer", () => {
   const mockAddTab = jest.fn();

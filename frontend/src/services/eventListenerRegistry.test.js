@@ -36,10 +36,13 @@ describe("eventListenerRegistry", () => {
   it("updateListenerUsage updates lastUsed when listener found", () => {
     const cb = () => {};
     addGlobalEventListener("scroll", cb);
-    const before = Date.now();
     updateListenerUsage("scroll", cb);
-    // Registry is internal; we just ensure no throw
     expect(removeSpy).not.toHaveBeenCalled();
+  });
+
+  it("updateListenerUsage does not throw when listener not in registry", () => {
+    const cb = () => {};
+    expect(() => updateListenerUsage("resize", cb)).not.toThrow();
   });
 
   it("cleanupEventListeners removes stale listeners and returns remaining", () => {
@@ -49,4 +52,5 @@ describe("eventListenerRegistry", () => {
     expect(removeSpy).toHaveBeenCalled();
     expect(Array.isArray(result)).toBe(true);
   });
+
 });

@@ -56,6 +56,10 @@ describe("variants (motion)", () => {
       expect(v.show.transition.duration).toBe(0.8);
       expect(v.show.transition.delay).toBe(0.2);
     });
+    it("hidden has correct y for down direction", () => {
+      const v = fadeIn("down", 15, 0);
+      expect(v.hidden.y).toBe(-15);
+    });
   });
 
   describe("slideIn", () => {
@@ -67,6 +71,10 @@ describe("variants (motion)", () => {
     it("hidden has -100vw x for left, 100vw for right", () => {
       expect(slideIn("left", 0).hidden.x).toBe("-100vw");
       expect(slideIn("right", 0).hidden.x).toBe("100vw");
+    });
+    it("hidden has -100dvh y for up, 100dvh for down", () => {
+      expect(slideIn("up", 0).hidden.y).toBe("-100dvh");
+      expect(slideIn("down", 0).hidden.y).toBe("100dvh");
     });
     it("show has spring transition", () => {
       expect(slideIn("left", 0.5).show.transition.type).toBe("spring");

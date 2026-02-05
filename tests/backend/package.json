@@ -1,0 +1,15 @@
+{
+  "name": "portfolio-tests-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend API and server tests for Kartavya Portfolio",
+  "scripts": {
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jsonwebtoken": "^9.0.3",
+    "node-fetch": "^3.3.2"
+  }
+}

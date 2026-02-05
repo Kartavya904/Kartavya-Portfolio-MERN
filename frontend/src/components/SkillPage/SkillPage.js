@@ -386,7 +386,6 @@ function SkillPage({ isBatterySavingOn, isWindowModalVisible }) {
     <section
       className="skill-container"
       id="skills"
-      style={{ overflow: "hidden" }}
     >
       {/* <SkillBG /> */}
       {/* <EnhancedHexagonalGrid /> */}

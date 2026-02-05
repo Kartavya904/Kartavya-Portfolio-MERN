@@ -57,24 +57,16 @@ const NavBar = ({ isBatterySavingOn, addTab }) => {
   }, []);
 
   useEffect(() => {
-    // Query the sections and navLinks once the component mounts
-    const sections = document.querySelectorAll("section");
-    const navLinks = document.querySelectorAll(
-      "nav .navbar-menu .navbar-links .navbar-link"
-    );
     let scrollTimer = null; // Timer to detect scroll end
 
-    // console.log("Sections:");
-    // sections.forEach((section) => {
-    //   // console.log("Class name:", section.className);
-    // });
-
-    // console.log("navLinks:");
-    // navLinks.forEach((link) => {
-    //   // console.log("Link:", link);
-    // });
-
     const handleScroll = () => {
+      // Query on each scroll so we see all sections after lazy-loaded content has mounted
+      const sections = document.querySelectorAll("section");
+      const navLinks = document.querySelectorAll(
+        "nav .navbar-menu .navbar-links .navbar-link"
+      );
+      if (!sections.length || !navLinks.length) return;
+
       // Clear any existing timer
       if (scrollTimer) {
         clearTimeout(scrollTimer);
@@ -87,7 +79,7 @@ const NavBar = ({ isBatterySavingOn, addTab }) => {
         let height = section.offsetHeight;
         let id = section.getAttribute("id");
 
-        if (top >= offset && top < offset + height) {
+        if (id && top >= offset && top < offset + height) {
           navLinks.forEach((link) => {
             link.classList.remove("active");
             if (link.getAttribute("href") === `#${id}`) {
@@ -127,9 +119,12 @@ const NavBar = ({ isBatterySavingOn, addTab }) => {
 
     // Add the scroll event listener
     window.addEventListener("scroll", handleScroll);
+    // Run once after a tick so initial active state is correct once lazy content is in the DOM
+    const initialTimer = setTimeout(handleScroll, 100);
 
     // Clean up event listener on component unmount
     return () => {
+      clearTimeout(initialTimer);
       if (scrollTimer) {
         clearTimeout(scrollTimer);
       }
@@ -207,11 +202,9 @@ const NavBar = ({ isBatterySavingOn, addTab }) => {
           // whileTap={{ scale: 0.9, rotate: 2 }}
           // drag
           // dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-          onClick={() => {
-            onUpdateActiveLink("home");
-            // if (window.innerWidth >= 992) {
-            //   setScrolled(false);
-            // }
+          onClick={(e) => {
+            e.preventDefault();
+            scrollToSection("home");
           }}
         >
           <b>Kartavya Singh</b>

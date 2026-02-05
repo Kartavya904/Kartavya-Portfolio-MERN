@@ -15,11 +15,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  overscroll-behavior-y: contain;
-  scroll-snap-align: center;
-  scroll-snap-type: y mandatory;
   justify-content: center;
-  height: calc(100vh - 52px);
+  min-height: calc(100vh - 52px);
   /* background-image: url("../assets/img/background/about-bg.png"); */
   /* background: linear-gradient(145deg, #212529, #181a1d); */
 
@@ -33,7 +30,7 @@
   color: #edeeef;
   text-align: center;
   z-index: 1;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .skill-div {
@@ -44,8 +41,8 @@
   margin: 0 auto;
   padding: 0 0px;
   z-index: 2;
-  height: calc(90vh - 52px);
-  overflow: hidden;
+  min-height: calc(90vh - 52px);
+  overflow: visible;
 }
 
 .skill-box {

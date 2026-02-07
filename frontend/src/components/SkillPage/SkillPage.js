@@ -1,147 +1,40 @@
-import React, { useState, useEffect, memo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  memo,
+  lazy,
+  Suspense,
+} from "react";
 import { zoomIn, fadeIn } from "../../services/variants";
 import "../../styles/SkillPage.css";
-import github from "../../assets/img/icons/github.png";
-import SkillBG from "./SkillBG.js";
-import SkillGraphCarousel from "./SkillGraph";
 import SkillSection from "./SkillSection";
 import { fetchSkillsComponents } from "../../services/skillComponentService";
-import { Bar } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
-// Register necessary components for Chart.js
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-);
-
-const BarChart = ({ topLangs, isBatterySavingOn }) => {
-  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setScreenWidth(window.innerWidth);
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Enhanced Data
-  const data = {
-    labels: topLangs.labels,
-    datasets: [
-      {
-        label: "Hours of Coding",
-        data: topLangs.data,
-        backgroundColor: [
-          "rgba(75, 192, 192, 0.6)",
-          "rgba(153, 102, 255, 0.6)",
-          "rgba(255, 159, 64, 0.6)",
-          "rgba(255, 99, 132, 0.6)",
-          "rgba(54, 162, 235, 0.6)",
-          "rgba(255, 206, 86, 0.6)",
-          "rgba(75, 192, 192, 0.6)",
-        ],
-        borderColor: [
-          "rgba(75, 192, 192, 1)",
-          "rgba(153, 102, 255, 1)",
-          "rgba(255, 159, 64, 1)",
-          "rgba(255, 99, 132, 1)",
-          "rgba(54, 162, 235, 1)",
-          "rgba(255, 206, 86, 1)",
-          "rgba(75, 192, 192, 1)",
-        ],
-        borderWidth: 2,
-        borderRadius: 6, // Rounded bars
-      },
-    ],
-  };
-
-  // Responsive Chart Options
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false, // Allow dynamic sizing
-    plugins: {
-      legend: {
-        display: false,
-      },
-      title: {
-        display: true,
-        className: "skill-paragraph",
-        text: "Coding Hours by Language",
-        color: "#edeeef",
-      },
-    },
-    scales: {
-      x: {
-        ticks: {
-          color: "#edeeef",
-          font: {
-            size: 12,
-          },
-        },
-        grid: {
-          display: true,
-        },
-      },
-      y: {
-        beginAtZero: true,
-        suggestedMax: 450,
-        ticks: {
-          color: "#edeeef",
-          stepSize: 50,
-          font: {
-            size: 12,
-          },
-        },
-        grid: {
-          color: "rgba(255, 255, 255, 0.1)",
-        },
-        animation: {
-          duration: 5000, // 2 seconds for the animation
-          easing: "easeOutQuart", // Smooth easing for the animation
-        },
-      },
-    },
-  };
-
-  return (
-    <motion.div
-      className="bar-chart-container"
-      variants={isBatterySavingOn ? {} : zoomIn(0)}
-      initial="hidden"
-      whileInView="show"
-      exit="hidden"
-    >
-      <Bar
-        className="bar-chart"
-        key={`bar-chart-${screenWidth}`}
-        data={data}
-        options={options}
-        aria-label="Bar chart displaying coding hours by language"
-      />
-    </motion.div>
-  );
-};
+const SkillsCharts = lazy(() => import("./SkillsCharts"));
 
 function SkillPage({ isBatterySavingOn, isWindowModalVisible }) {
   const [skillScreenWidth, setSkillScreenWidth] = useState(window.innerWidth);
   const [topLangs, setTopLangs] = useState({ labels: [], data: [] });
   const [skills, setSkills] = useState([]);
+  const [chartsInView, setChartsInView] = useState(false);
+  const chartsSectionRef = useRef(null);
+
+  useEffect(() => {
+    const el = chartsSectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          setChartsInView(entry.isIntersecting);
+        }
+      },
+      { threshold: 0.1, rootMargin: "0px 0px 50px 0px" },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const loadSkills = async () => {
@@ -438,37 +331,25 @@ function SkillPage({ isBatterySavingOn, isWindowModalVisible }) {
             >
               <strong>My Workspace</strong>
             </motion.p>
-            <motion.div className="last-skill-row">
-              <motion.div className="last-skill-column column1">
-                <a
-                  href="https://github.com/Kartavya904/#topLang"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="github-icon"
+            <motion.div className="last-skill-row" ref={chartsSectionRef}>
+              {chartsInView ? (
+                <Suspense
+                  fallback={
+                    <div
+                      className="last-skill-column column1"
+                      style={{ minHeight: 200 }}
+                    />
+                  }
                 >
-                  <img src={github} alt="GitHub" />
-                </a>
-
-                <BarChart
-                  key={topLangs}
-                  topLangs={topLangs}
-                  isBatterySavingOn={isBatterySavingOn}
-                />
-              </motion.div>
-              <motion.div className="last-skill-column column2">
-                <motion.div
-                  className="skill-graph-carousel"
-                  variants={isBatterySavingOn ? {} : zoomIn(0)}
-                  initial="hidden"
-                  whileInView="show"
-                  exit="hidden"
-                >
-                  <SkillGraphCarousel
+                  <SkillsCharts
+                    topLangs={topLangs}
                     skills={skills}
                     isBatterySavingOn={isBatterySavingOn}
                   />
-                </motion.div>
-              </motion.div>
+                </Suspense>
+              ) : (
+                <div style={{ minHeight: 280 }} aria-hidden="true" />
+              )}
             </motion.div>
           </motion.div>
         </div>

@@ -111,11 +111,6 @@ const SkillGraph = ({ givenData, isBatterySavingOn }) => {
         borderWidth: 3,
         padding: 10,
       },
-      animation: {
-        duration: 2000, // 2 seconds for a full animation
-        easing: "easeInOutQuad",
-        // onComplete: () => console.log("Animation Complete!"),
-      },
       customAverage: {
         id: "customAverage",
         beforeDraw(chart) {
@@ -136,20 +131,20 @@ const SkillGraph = ({ givenData, isBatterySavingOn }) => {
       },
     },
     animation: {
-      duration: 1500,
-      easing: "easeInOutQuart",
+      duration: 400,
+      easing: "easeOutQuart",
     },
     hover: {
-      animationDuration: 500, // Animate data points on hover
+      animationDuration: 300,
     },
   };
 
   return (
     <motion.div
       className="skill-image"
-      initial={isBatterySavingOn ? {} : { opacity: 0, scale: 0.8 }}
+      initial={isBatterySavingOn ? {} : { opacity: 0, scale: 0.98 }}
       animate={isBatterySavingOn ? {} : { opacity: 1, scale: 1 }}
-      transition={isBatterySavingOn ? {} : { duration: 1.5, ease: "easeInOut" }}
+      transition={isBatterySavingOn ? {} : { duration: 0.35, ease: "easeOut" }}
     >
       <Radar
         data={data}

@@ -368,29 +368,7 @@ function App({
     };
   }, []);
 
-  // Must-load images preload in background (does not block first paint).
-  useEffect(() => {
-    const api = process.env.REACT_APP_API_URI;
-    if (!api) return;
-    fetch(`${api}/must-load-images`)
-      .then((res) => res.json())
-      .then((urls) => {
-        const skipPreload = (url) => {
-          const u = url && typeof url === "string" ? url : "";
-          return /system-user\.webp|user-icon\.svg/i.test(u);
-        };
-        urls
-          .filter((url) => !skipPreload(url))
-          .forEach((url) => {
-            const link = document.createElement("link");
-            link.rel = "preload";
-            link.as = "image";
-            link.href = url;
-            document.head.appendChild(link);
-          });
-      })
-      .catch(() => {});
-  }, []);
+  // Must-load images are preloaded only in Loading.js (single place).
 
   // Low-power toggle is visual only (green/red dot); never reduce animations.
   const batterySavingForBehavior = false;

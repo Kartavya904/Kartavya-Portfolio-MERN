@@ -167,11 +167,9 @@ function HomePage({
 
   return (
     <AnimatePresence>
-      <div className="homepage-bg-wrapper">
+      <div key="home-bg" className="homepage-bg-wrapper" ref={HomeBGRef}>
         <motion.div
           className="homepage-bg"
-          key={scrollYProgress}
-          ref={HomeBGRef}
           style={
             isBatterySavingOn
               ? {
@@ -218,7 +216,7 @@ function HomePage({
           }
         />
       </div>
-      <section className="homepage-container" id="home">
+      <section key="home-content" className="homepage-container" id="home">
         <div
           className="container"
           // style={{ zoom: "80%", height: "calc(100vh -52px)" }}

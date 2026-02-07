@@ -58,14 +58,20 @@ const Loading = ({ isBatterySavingOn, setIsBatterySavingOn, onComplete }) => {
               const urls = await response.json();
               // console.log("Must-load Image URLs: ", urls);
 
-              // For each must-load image, create and append a preload link.
-              urls.forEach((url) => {
-                const link = document.createElement("link");
-                link.rel = "preload";
-                link.as = "image";
-                link.href = url;
-                document.head.appendChild(link);
-              });
+              const skipPreload = (url) => {
+                const u = url && typeof url === "string" ? url : "";
+                return /system-user\.webp|user-icon\.svg/i.test(u);
+              };
+              // For each must-load image, create and append a preload link (skip non–above-the-fold).
+              urls
+                .filter((url) => !skipPreload(url))
+                .forEach((url) => {
+                  const link = document.createElement("link");
+                  link.rel = "preload";
+                  link.as = "image";
+                  link.href = url;
+                  document.head.appendChild(link);
+                });
 
               // Mark images as ready (we assume the browser will handle preloading).
               setMustLoadImageStatus({

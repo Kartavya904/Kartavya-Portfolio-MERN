@@ -4,6 +4,15 @@ import App from "./App";
 // import "./index.css";
 import Loading from "./components/SpecialComponents/Loading";
 
+console.log(
+  "%cHey there, developer. I see you. 👀",
+  "font-weight: bold; font-size: 14px;",
+);
+console.log(
+  "No errors here (hopefully)—but I knew you'd come over here to spectate on the elements.",
+);
+console.log("Good luck! — A CS student who left this here for you. 🛠️");
+
 const Root = () => {
   const [isReady, setIsReady] = useState(false);
   const [isBatterySavingOn, setIsBatterySavingOn] = useState(false);

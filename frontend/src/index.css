@@ -36,6 +36,13 @@ body,
   overflow-y: auto;
 }
 
+/* Non-static position so Framer Motion useScroll can measure scroll offset correctly. */
+body,
+#root,
+.App {
+  position: relative;
+}
+
 /* * {
   margin: 0;
   padding: 0;

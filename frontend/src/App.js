@@ -376,13 +376,19 @@ function App({
     fetch(`${api}/must-load-images`)
       .then((res) => res.json())
       .then((urls) => {
-        urls.forEach((url) => {
-          const link = document.createElement("link");
-          link.rel = "preload";
-          link.as = "image";
-          link.href = url;
-          document.head.appendChild(link);
-        });
+        const skipPreload = (url) => {
+          const u = url && typeof url === "string" ? url : "";
+          return /system-user\.webp|user-icon\.svg/i.test(u);
+        };
+        urls
+          .filter((url) => !skipPreload(url))
+          .forEach((url) => {
+            const link = document.createElement("link");
+            link.rel = "preload";
+            link.as = "image";
+            link.href = url;
+            document.head.appendChild(link);
+          });
       })
       .catch(() => {});
   }, []);

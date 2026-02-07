@@ -16,6 +16,19 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
   // Create an array of refs for each project card
   const cardRefs = useRef([]);
 
+  // Throttle hover position updates to one per frame (rAF)
+  const pendingMouseRef = useRef(null);
+  const hoverRafIdRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (hoverRafIdRef.current !== null) {
+        cancelAnimationFrame(hoverRafIdRef.current);
+        hoverRafIdRef.current = null;
+      }
+    };
+  }, []);
+
   // Trigger to force layout recalculation
   const [layoutTrigger, setLayoutTrigger] = useState(0);
 
@@ -54,30 +67,37 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Sticky header: run only after user stops scrolling (debounce) so scroll stays smooth.
+  // Stacking (baseTopOffset, offsetSpacing) is unchanged — computed in layout effect below.
   useEffect(() => {
-    let rafId = null;
+    let debounceTimer = null;
+    const STICKY_DEBOUNCE_MS = 120;
+
+    const runStickyLogic = () => {
+      const header = document.querySelector(".project-section-title");
+      const lastCard = document.querySelector(".project-card-last");
+      if (!header || !lastCard) return;
+      const titleStyles = window.getComputedStyle(header);
+      const titleMarginTop = parseFloat(titleStyles.marginTop) || 0;
+      const lastRect = lastCard.getBoundingClientRect();
+      const newPosition = lastRect.top <= 0 ? "relative" : "sticky";
+      const newTop = lastRect.top <= 0 ? "" : `${titleMarginTop + 52}px`;
+      header.style.position = newPosition;
+      if (newTop) header.style.top = newTop;
+    };
+
     const handleScroll = () => {
-      if (rafId !== null) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        const header = document.querySelector(".project-section-title");
-        const lastCard = document.querySelector(".project-card-last");
-        if (!header || !lastCard) return;
-        const titleStyles = window.getComputedStyle(header);
-        const titleMarginTop = parseFloat(titleStyles.marginTop) || 0;
-        const lastRect = lastCard.getBoundingClientRect();
-        const newPosition = lastRect.top <= 0 ? "relative" : "sticky";
-        const newTop = lastRect.top <= 0 ? "" : `${titleMarginTop + 52}px`;
-        requestAnimationFrame(() => {
-          header.style.position = newPosition;
-          if (newTop) header.style.top = newTop;
-        });
-      });
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        debounceTimer = null;
+        runStickyLogic();
+      }, STICKY_DEBOUNCE_MS);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
+    runStickyLogic(); // initial state when projects section is in view
     return () => {
-      if (rafId !== null) cancelAnimationFrame(rafId);
+      if (debounceTimer) clearTimeout(debounceTimer);
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
@@ -186,17 +206,29 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
     window.scrollTo({ top: targetY, behavior: "smooth" });
   };
 
-  // Hover effects
-  const handleMouseMove = (event, index) => {
-    const { clientX, clientY } = event;
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = (clientX - (rect.left + rect.width / 2)) / 30;
-    const y = (clientY - (rect.top + rect.height / 2)) / 30;
+  // Hover effects: position updates throttled to one per frame (rAF); Enter/Leave stay instant for tooltip and pop.
+  const flushPendingMouse = () => {
+    hoverRafIdRef.current = null;
+    const pending = pendingMouseRef.current;
+    if (pending === null) return;
+    pendingMouseRef.current = null;
+    const { index, x, y } = pending;
     setCardStates((prevStates) =>
       prevStates.map((state, i) =>
         i === index ? { ...state, mousePosition: { x, y } } : state,
       ),
     );
+  };
+
+  const handleMouseMove = (event, index) => {
+    const { clientX, clientY } = event;
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = (clientX - (rect.left + rect.width / 2)) / 30;
+    const y = (clientY - (rect.top + rect.height / 2)) / 30;
+    pendingMouseRef.current = { index, x, y };
+    if (hoverRafIdRef.current === null) {
+      hoverRafIdRef.current = requestAnimationFrame(flushPendingMouse);
+    }
   };
 
   const handleMouseEnter = (index) => {

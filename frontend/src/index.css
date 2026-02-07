@@ -1,7 +1,7 @@
 /* Import Montserrat Google Font */
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap");
 
-/* Font Face Declarations for Local Montserrat */
+/* Font Face Declarations for Local Montserrat (from src so webpack can resolve) */
 @font-face {
   font-family: "Montserrat";
   src: url("./assets/font/Montserrat-Bold.ttf") format("truetype");

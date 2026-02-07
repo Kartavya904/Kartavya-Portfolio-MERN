@@ -53,7 +53,7 @@ const Loading = ({ isBatterySavingOn, setIsBatterySavingOn, onComplete }) => {
           async function preloadMustLoadImages() {
             try {
               const response = await fetch(
-                `${process.env.REACT_APP_API_URI}/must-load-images`
+                `${process.env.REACT_APP_API_URI}/must-load-images`,
               );
               const urls = await response.json();
               // console.log("Must-load Image URLs: ", urls);
@@ -95,7 +95,9 @@ const Loading = ({ isBatterySavingOn, setIsBatterySavingOn, onComplete }) => {
     }
   }, [loaded]);
 
-  // Check device performance and capabilities (unchanged)
+  // Device stats for loading-screen display only (no CPU test, no device-based low-power logic).
+  // Previously: full device/CPU detection and setIsBatterySavingOn; now disabled so low-power is gimmick only.
+  /*
   useEffect(() => {
     const checkPerformanceAndCapabilities = async () => {
       const prefersReducedMotion = window.matchMedia(
@@ -135,7 +137,7 @@ const Loading = ({ isBatterySavingOn, setIsBatterySavingOn, onComplete }) => {
         isTouchDevice,
         cpuTestDuration: cpuTestDuration.toFixed(2),
       });
-      //setIsBatterySavingOn(isSavingMode);
+      // setIsBatterySavingOn(isSavingMode);
       setIsBatterySavingOn(false);
     };
 
@@ -154,13 +156,31 @@ const Loading = ({ isBatterySavingOn, setIsBatterySavingOn, onComplete }) => {
       );
     };
   }, [setIsBatterySavingOn]);
-
-  // Trigger onComplete when backend/database loaded, greetings are shown, and must-load images are ready.
+  */
   useEffect(() => {
-    if (loaded && allGreetingsShown && imagesReady && onComplete) {
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const isTouchDevice =
+      "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    setStats({
+      prefersReducedMotion,
+      isLowBattery: false,
+      lowPerformanceDevice: false,
+      lowMemoryDevice: false,
+      isCpuThrottled: false,
+      isTouchDevice,
+      cpuTestDuration: null,
+    });
+    // Low-power mode is gimmick only: never set from device; user toggles button in PowerMode.
+  }, []);
+
+  // Trigger onComplete when backend/database loaded and greetings are shown (do not wait for must-load images).
+  useEffect(() => {
+    if (loaded && allGreetingsShown && onComplete) {
       onComplete();
     }
-  }, [loaded, allGreetingsShown, imagesReady, onComplete]);
+  }, [loaded, allGreetingsShown, onComplete]);
 
   // Update scale for loading content.
   useEffect(() => {
@@ -180,7 +200,7 @@ const Loading = ({ isBatterySavingOn, setIsBatterySavingOn, onComplete }) => {
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  return !loaded || !allGreetingsShown || !imagesReady ? (
+  return !loaded || !allGreetingsShown ? (
     <motion.div
       className="loading-container"
       initial={{ opacity: 0 }}
@@ -259,8 +279,8 @@ const Loading = ({ isBatterySavingOn, setIsBatterySavingOn, onComplete }) => {
             {isBatterySavingOn
               ? "Reducing Animations Due to Weak Device ❌"
               : "ontouchstart" in window || navigator.maxTouchPoints > 0
-              ? "Reducing Animations for Touch Devices ✅"
-              : "Amplifying Animations ✅"}
+                ? "Reducing Animations for Touch Devices ✅"
+                : "Amplifying Animations ✅"}
           </motion.p>
           <motion.p
             initial={{ opacity: 0 }}

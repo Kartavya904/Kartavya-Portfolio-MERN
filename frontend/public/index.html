@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,7 +19,7 @@
       property="og:description"
       content="Explore Kartavya Singh's portfolio of innovative projects, showcasing expertise in full-stack development and AI-powered solutions, and a passion for learning and problem-solving."
     />
-    <meta property="og:image" content="../src/assets/img/media/Kartavya.jpg" />
+    <meta property="og:image" content="../src/assets/img/media/Kartavya.webp" />
     <meta property="og:url" content="https://www.kartavya-singh.com" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -30,18 +30,34 @@
     />
     <meta name="twitter:image" content="URL_to_your_image.jpg" />
     <link rel="website icon" href="./favicon.ico" />
+    <!-- Preload LCP and critical above-the-fold / scroll assets -->
+    <link rel="preload" as="image" href="%PUBLIC_URL%/home-bg.webp" />
+    <link rel="preload" as="image" href="%PUBLIC_URL%/Kartavya.webp" />
+    <link
+      rel="preload"
+      as="image"
+      href="%PUBLIC_URL%/Kartavya-Profile-Photo.webp"
+    />
+    <link rel="preload" as="image" href="%PUBLIC_URL%/contact-bg.webp" />
+    <!-- Fonts loaded via CSS from src/assets/font (webpack bundles them; no HTML preload) -->
+    <!-- Primary Font Awesome: render-blocking for first paint -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
     />
     <link rel="apple-touch-icon" href="./favicon.ico" />
+    <!-- Font Awesome 4.7 and 6: load async so first paint isn't blocked -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+      media="print"
+      onload="this.media = 'all'"
     />
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
       rel="stylesheet"
+      media="print"
+      onload="this.media = 'all'"
     />
     <!-- <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"

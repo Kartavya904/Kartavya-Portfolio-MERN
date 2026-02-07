@@ -65,7 +65,7 @@ const ExperiencePage = ({
 }) => {
   const [selectedTab, setSelectedTab] = useState(tabs[1]); // Default tab is "Career"
   const [ActiveComponent, setActiveComponent] = useState(
-    () => selectedTab.component
+    () => selectedTab.component,
   );
 
   useEffect(() => {

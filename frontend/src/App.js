@@ -18,15 +18,19 @@ import PowerMode from "./components/SpecialComponents/PowerMode";
 const HomePage = lazy(() => import("./components/HomePage/HomePage"));
 const AboutPage = lazy(() => import("./components/AboutPage/AboutPage"));
 const SkillPage = lazy(() => import("./components/SkillPage/SkillPage"));
-const ExperiencePage = lazy(() =>
-  import("./components/ExperiencePage/ExperiencePage")
+const ExperiencePage = lazy(
+  () => import("./components/ExperiencePage/ExperiencePage"),
 );
 const ProjectPage = lazy(() => import("./components/ProjectPage/ProjectPage"));
 const ContactPage = lazy(() => import("./components/ContactPage/ContactPage"));
 const WindowModal = lazy(() => import("./components/WindowModal/WindowModal"));
 // import { cleanupEventListeners } from "./services/eventListenerRegistry";
 
-function App({ isBatterySavingOn, setIsBatterySavingOn }) {
+function App({
+  isBatterySavingOn,
+  setIsBatterySavingOn,
+  isLoadingComplete = true,
+}) {
   const [scrolled, setScrolled] = useState(window.scrollY > 100);
   const [loggedIn, setLoggedIn] = useState(false);
   const [tabs, setTabs] = useState([]); // Tabs state for WindowModal
@@ -87,7 +91,7 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
             data.honorsExperienceTitle ||
             data.involvementTitle ||
             data.yearInReviewTitle ||
-            data.adminTitle)
+            data.adminTitle),
       );
 
       if (existingTabIndex !== -1) {
@@ -165,7 +169,7 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
   // add this at the top of your component file
   const delay = useCallback(
     (ms) => new Promise((res) => setTimeout(res, ms)),
-    []
+    [],
   );
 
   // memoize sendQuery so its identity only changes when its inputs change
@@ -177,7 +181,7 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
       if (!trimmed) return;
       if (queriesSent >= MAX_QUERIES) {
         setErrorMsg(
-          `You’ve reached your ${MAX_QUERIES}‑query/day limit. Try again tomorrow.`
+          `You’ve reached your ${MAX_QUERIES}‑query/day limit. Try again tomorrow.`,
         );
         return;
       }
@@ -203,7 +207,7 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
       // 1) get optimized query
       const { data: optRes } = await axios.post(
         `${API_URL}/ai/optimize-query`,
-        { query: trimmed, conversationMemory }
+        { query: trimmed, conversationMemory },
       );
       const optimized = optRes.optimizedQuery || trimmed;
       console.log(optimized);
@@ -212,8 +216,8 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
       if (!cancelRef.current) {
         setChatHistory((h) =>
           h.map((m) =>
-            m.id === aiId ? { ...m, text: "Gathering Context..." } : m
-          )
+            m.id === aiId ? { ...m, text: "Gathering Context..." } : m,
+          ),
         );
       }
       // 3) Fire the main chat API
@@ -229,8 +233,8 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
         if (!cancelRef.current) {
           setChatHistory((h) =>
             h.map((m) =>
-              m.id === aiId ? { ...m, text: "Generating Response..." } : m
-            )
+              m.id === aiId ? { ...m, text: "Generating Response..." } : m,
+            ),
           );
         }
         // 5) Await the answer
@@ -246,7 +250,7 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
             query: optimized,
             response: answerText,
             conversationMemory: conversationMemory,
-          }
+          },
         );
 
         // 8) Snapshot memory
@@ -262,8 +266,8 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
             h.map((m) =>
               m.id === aiId
                 ? { ...m, text: "Updating Conversation Memory…" }
-                : m
-            )
+                : m,
+            ),
           );
         }
         const newMem = memRes.data.memory;
@@ -293,7 +297,7 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
           // now this callback only ever references textToShow, which is
           // a fresh const on each iteration
           setChatHistory((h) =>
-            h.map((m) => (m.id === aiId ? { ...m, text: textToShow } : m))
+            h.map((m) => (m.id === aiId ? { ...m, text: textToShow } : m)),
           );
 
           await delay(TYPING_DELAY);
@@ -321,15 +325,15 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
                     ? `${m.text} [Generation stopped]`
                     : "Sorry, something went wrong.",
                 }
-              : m
-          )
+              : m,
+          ),
         );
         setLoading(false);
       } finally {
         setQuery("");
       }
     },
-    [chatStarted, conversationMemory, delay, queriesSent, API_URL]
+    [chatStarted, conversationMemory, delay, queriesSent, API_URL],
   );
 
   // --- Stop generation handler ---
@@ -338,8 +342,8 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
       h.map((msg) =>
         msg.id === latestAIId
           ? { ...msg, text: msg.text + "... [Generation stopped]" }
-          : msg
-      )
+          : msg,
+      ),
     );
 
     // 1) signal your existing cancel flag
@@ -350,14 +354,41 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
   }, [latestAIId]);
 
   useEffect(() => {
+    let rafId = null;
     const onScroll = () => {
-      setScrolled(window.scrollY > 100);
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        setScrolled(window.scrollY > 100);
+      });
     };
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", onScroll);
     };
   }, []);
+
+  // Must-load images preload in background (does not block first paint).
+  useEffect(() => {
+    const api = process.env.REACT_APP_API_URI;
+    if (!api) return;
+    fetch(`${api}/must-load-images`)
+      .then((res) => res.json())
+      .then((urls) => {
+        urls.forEach((url) => {
+          const link = document.createElement("link");
+          link.rel = "preload";
+          link.as = "image";
+          link.href = url;
+          document.head.appendChild(link);
+        });
+      })
+      .catch(() => {});
+  }, []);
+
+  // Low-power toggle is visual only (green/red dot); never reduce animations.
+  const batterySavingForBehavior = false;
 
   return (
     <AnimatePresence>
@@ -372,33 +403,26 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
           setIsBatterySavingOn={setIsBatterySavingOn}
           scrolled={scrolled}
         />
-        <NavBar isBatterySavingOn={isBatterySavingOn} addTab={addTab} />
+        <NavBar isBatterySavingOn={batterySavingForBehavior} addTab={addTab} />
         <Suspense fallback={null}>
           <HomePage
-            isBatterySavingOn={isBatterySavingOn}
+            isBatterySavingOn={batterySavingForBehavior}
             scrolled={scrolled}
             addTab={addTab}
             sendQuery={sendQuery}
+            isLoadingComplete={isLoadingComplete}
           />
         </Suspense>
-        {/* {isWindowModalVisible && (
-          <>
-                  <AboutPage isBatterySavingOn={isBatterySavingOn} />
-        <SkillPage isBatterySavingOn={isBatterySavingOn} />
-        <ProjectPage addTab={addTab} isBatterySavingOn={isBatterySavingOn} />
-        <ExperiencePage addTab={addTab} isBatterySavingOn={isBatterySavingOn} />
-          </>
-        )} */}
         <Suspense fallback={null}>
           <AboutPage
-            isBatterySavingOn={isBatterySavingOn}
+            isBatterySavingOn={batterySavingForBehavior}
             isWindowModalVisible={isWindowModalVisible}
             addTab={addTab}
           />
         </Suspense>
         <Suspense fallback={null}>
           <SkillPage
-            isBatterySavingOn={isBatterySavingOn}
+            isBatterySavingOn={batterySavingForBehavior}
             isWindowModalVisible={isWindowModalVisible}
           />
         </Suspense>
@@ -408,7 +432,6 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
             top: 0,
             bottom: 0,
             width: "100%",
-            // height: "calc(100vh - 52px)",
             height: "auto",
             overflow: "show",
           }}
@@ -416,7 +439,7 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
           <Suspense fallback={null}>
             <ProjectPage
               addTab={addTab}
-              isBatterySavingOn={isBatterySavingOn}
+              isBatterySavingOn={batterySavingForBehavior}
               isWindowModalVisible={isWindowModalVisible}
             />
           </Suspense>
@@ -424,15 +447,18 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
         <Suspense fallback={null}>
           <ExperiencePage
             addTab={addTab}
-            isBatterySavingOn={isBatterySavingOn}
+            isBatterySavingOn={batterySavingForBehavior}
             isWindowModalVisible={isWindowModalVisible}
           />
         </Suspense>
         <Suspense fallback={null}>
-          <ContactPage isBatterySavingOn={isBatterySavingOn} addTab={addTab} />
+          <ContactPage
+            isBatterySavingOn={batterySavingForBehavior}
+            addTab={addTab}
+          />
         </Suspense>
         <Links
-          isBatterySavingOn={isBatterySavingOn}
+          isBatterySavingOn={batterySavingForBehavior}
           isWindowModalVisible={isWindowModalVisible}
         />
         {/* <a
@@ -464,7 +490,7 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
                 addTab("AIChatTab", { title: "Kartavya's AI Companion" });
               }}
               title="Links"
-              initial={isBatterySavingOn ? {} : { opacity: 0, scale: 0 }}
+              initial={batterySavingForBehavior ? {} : { opacity: 0, scale: 0 }}
               drag
               dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
               dragElastic={0.3}
@@ -472,10 +498,14 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
                 bounceStiffness: 250,
                 bounceDamping: 15,
               }}
-              whileInView={isBatterySavingOn ? {} : { opacity: 1, scale: 1 }}
-              whileHover={isBatterySavingOn ? {} : { scale: 1.1 }}
-              whileTap={isBatterySavingOn ? {} : { scale: 0.9 }}
-              transition={isBatterySavingOn ? {} : { delay: 0, type: "spring" }}
+              whileInView={
+                batterySavingForBehavior ? {} : { opacity: 1, scale: 1 }
+              }
+              whileHover={batterySavingForBehavior ? {} : { scale: 1.1 }}
+              whileTap={batterySavingForBehavior ? {} : { scale: 0.9 }}
+              transition={
+                batterySavingForBehavior ? {} : { delay: 0, type: "spring" }
+              }
             >
               <animated.img
                 src={require("./assets/img/icons/aichat.png")}
@@ -499,7 +529,7 @@ function App({ isBatterySavingOn, setIsBatterySavingOn }) {
             lastActiveIndex={lastActiveIndex}
             setLastActiveIndex={setLastActiveIndex}
             scrolled={scrolled}
-            isBatterySavingOn={isBatterySavingOn}
+            isBatterySavingOn={batterySavingForBehavior}
             loggedIn={loggedIn}
             setLoggedIn={setLoggedIn}
             isWindowModalVisible={isWindowModalVisible}

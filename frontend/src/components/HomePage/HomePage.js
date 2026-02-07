@@ -15,7 +15,13 @@ import { zoomIn } from "../../services/variants";
 import "../../styles/HomePage.css";
 // import ProfilePhoto from `${process.env.PUBLIC_URL}/Kartavya.webp`;
 
-function HomePage({ isBatterySavingOn, scrolled, addTab, sendQuery }) {
+function HomePage({
+  isBatterySavingOn,
+  scrolled,
+  addTab,
+  sendQuery,
+  isLoadingComplete,
+}) {
   const [clicked, setClicked] = useState(false);
   const [isCooldown, setIsCooldown] = useState(false);
   const clickCount = useRef(0); // Use useRef to keep track of click count across renders
@@ -244,8 +250,8 @@ function HomePage({ isBatterySavingOn, scrolled, addTab, sendQuery }) {
                     transform: isBatterySavingOn
                       ? {}
                       : isHovering
-                      ? `translate3d(${mousePosition.x}px, ${mousePosition.y}px, 0) scale3d(1.03, 1.03, 1.03)`
-                      : "translate3d(0px, 0px, 0) scale3d(1, 1, 1)",
+                        ? `translate3d(${mousePosition.x}px, ${mousePosition.y}px, 0) scale3d(1.03, 1.03, 1.03)`
+                        : "translate3d(0px, 0px, 0) scale3d(1, 1, 1)",
                     transition: "transform 0.1s ease-out",
                     height: "250px !important",
                     width: "250px !important",
@@ -270,7 +276,7 @@ function HomePage({ isBatterySavingOn, scrolled, addTab, sendQuery }) {
                 Kartavya Singh
               </motion.h1>
 
-              {/* Changing Text Animation */}
+              {/* Changing Text Animation: only starts when loading overlay is gone */}
               <motion.div
                 className="changing-text-container"
                 onClick={() => setKey((prevKey) => prevKey + 1)}
@@ -280,20 +286,26 @@ function HomePage({ isBatterySavingOn, scrolled, addTab, sendQuery }) {
               >
                 <em>
                   <span className="changing-text">
-                    <TypeAnimation
-                      key={key} // Forces the component to re-render on click
-                      className="changing-text-animation"
-                      sequence={[
-                        1500,
-                        ...keywords.map((text) => [text, 3000]), // Typing each keyword with a pause
-                        keywords[keywords.length - 1], // Ensures the last phrase displays permanently
-                      ].flat()}
-                      speed={{ type: "keyStrokeDelayInMs", value: 17 }} // Fast typing
-                      deletionSpeed={{ type: "keyStrokeDelayInMs", value: 8 }}
-                      // delay={1000}
-                      repeat={0} // No repeat
-                      cursor={true}
-                    />
+                    {isLoadingComplete ? (
+                      <TypeAnimation
+                        key={key} // Forces the component to re-render on click
+                        className="changing-text-animation"
+                        sequence={[
+                          500,
+                          ...keywords.map((text) => [text, 3000]), // Typing each keyword with a pause
+                          keywords[keywords.length - 1], // Ensures the last phrase displays permanently
+                        ].flat()}
+                        speed={{ type: "keyStrokeDelayInMs", value: 17 }} // Fast typing
+                        deletionSpeed={{ type: "keyStrokeDelayInMs", value: 8 }}
+                        // delay={1000}
+                        repeat={0} // No repeat
+                        cursor={true}
+                      />
+                    ) : (
+                      <span className="changing-text-animation">
+                        {keywords[0]}
+                      </span>
+                    )}
                   </span>
                 </em>
               </motion.div>

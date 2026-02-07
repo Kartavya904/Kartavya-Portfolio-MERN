@@ -35,7 +35,7 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
           data.map(() => ({
             mousePosition: { x: 0, y: 0 },
             isHovering: false,
-          }))
+          })),
         );
       } catch (error) {
         console.error("Error fetching projects:", error);
@@ -55,28 +55,31 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
   }, []);
 
   useEffect(() => {
+    let rafId = null;
     const handleScroll = () => {
-      const header = document.querySelector(".project-section-title");
-      const titleStyles = window.getComputedStyle(header);
-      let titleMarginTop = parseFloat(titleStyles.marginTop) || 0;
-
-      const lastCard = document.querySelector(".project-card-last");
-      if (!header || !lastCard) return;
-
-      const lastRect = lastCard.getBoundingClientRect();
-
-      // When the last card's top reaches the top of the viewport,
-      // disable sticky behavior for the header.
-      if (lastRect.top <= 0) {
-        header.style.position = "relative";
-      } else {
-        header.style.position = "sticky";
-        header.style.top = `${titleMarginTop + 52}px`;
-      }
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const header = document.querySelector(".project-section-title");
+        const lastCard = document.querySelector(".project-card-last");
+        if (!header || !lastCard) return;
+        const titleStyles = window.getComputedStyle(header);
+        const titleMarginTop = parseFloat(titleStyles.marginTop) || 0;
+        const lastRect = lastCard.getBoundingClientRect();
+        const newPosition = lastRect.top <= 0 ? "relative" : "sticky";
+        const newTop = lastRect.top <= 0 ? "" : `${titleMarginTop + 52}px`;
+        requestAnimationFrame(() => {
+          header.style.position = newPosition;
+          if (newTop) header.style.top = newTop;
+        });
+      });
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   // Recalculate layout whenever projects, battery mode, or layoutTrigger changes
@@ -191,8 +194,8 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
     const y = (clientY - (rect.top + rect.height / 2)) / 30;
     setCardStates((prevStates) =>
       prevStates.map((state, i) =>
-        i === index ? { ...state, mousePosition: { x, y } } : state
-      )
+        i === index ? { ...state, mousePosition: { x, y } } : state,
+      ),
     );
   };
 
@@ -200,8 +203,8 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
     setHoveredCard(index);
     setCardStates((prevStates) =>
       prevStates.map((state, i) =>
-        i === index ? { ...state, isHovering: true } : state
-      )
+        i === index ? { ...state, isHovering: true } : state,
+      ),
     );
   };
 
@@ -209,8 +212,8 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
     setHoveredCard(null);
     setCardStates((prevStates) =>
       prevStates.map((state, i) =>
-        i === index ? { ...state, isHovering: false } : state
-      )
+        i === index ? { ...state, isHovering: false } : state,
+      ),
     );
   };
 
@@ -271,8 +274,8 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
                 transform: isBatterySavingOn
                   ? ""
                   : isHovering
-                  ? `translate3d(${mousePosition.x}px, ${mousePosition.y}px, 0)`
-                  : "translate3d(0, 0, 0)",
+                    ? `translate3d(${mousePosition.x}px, ${mousePosition.y}px, 0)`
+                    : "translate3d(0, 0, 0)",
                 transition: isBatterySavingOn
                   ? "none"
                   : "transform 0.1s ease-out",
@@ -298,8 +301,8 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
                       prevProjects.map((p) =>
                         p.projectTitle === project.projectTitle
                           ? { ...p, likesCount: (p.likesCount || 0) + 1 }
-                          : p
-                      )
+                          : p,
+                      ),
                     )
                   }
                 />

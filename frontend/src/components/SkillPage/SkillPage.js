@@ -25,7 +25,7 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
 const BarChart = ({ topLangs, isBatterySavingOn }) => {
@@ -313,7 +313,7 @@ function SkillPage({ isBatterySavingOn, isWindowModalVisible }) {
           ([name, percentageStr]) => ({
             name,
             percentage: parseFloat(percentageStr.replace("%", "")),
-          })
+          }),
         );
 
         // Use all languages returned (or you can slice if you only want the top N)
@@ -327,7 +327,7 @@ function SkillPage({ isBatterySavingOn, isWindowModalVisible }) {
             acc.data.push(parseFloat(hours.toFixed(2)));
             return acc;
           },
-          { labels: [], data: [] }
+          { labels: [], data: [] },
         );
 
         setTopLangs(processedData);
@@ -338,7 +338,7 @@ function SkillPage({ isBatterySavingOn, isWindowModalVisible }) {
           ([name, percentageStr]) => ({
             name,
             percentage: parseFloat(percentageStr.replace("%", "")),
-          })
+          }),
         );
         const processedData = fallbackLangArray.reduce(
           (acc, lang) => {
@@ -347,7 +347,7 @@ function SkillPage({ isBatterySavingOn, isWindowModalVisible }) {
             acc.data.push(parseFloat(hours.toFixed(2)));
             return acc;
           },
-          { labels: [], data: [] }
+          { labels: [], data: [] },
         );
         setTopLangs(processedData);
       }
@@ -383,10 +383,7 @@ function SkillPage({ isBatterySavingOn, isWindowModalVisible }) {
   }, []);
 
   return (
-    <section
-      className="skill-container"
-      id="skills"
-    >
+    <section className="skill-container" id="skills">
       {/* <SkillBG /> */}
       {/* <EnhancedHexagonalGrid /> */}
       {/* <SpotlightBG /> */}

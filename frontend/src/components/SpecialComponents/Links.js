@@ -64,7 +64,7 @@ const Links = ({ isBatterySavingOn, isWindowModalVisible }) => {
           setIsOpen(false);
         }
       });
-      window.addEventListener("scroll", handleScroll);
+      window.addEventListener("scroll", handleScroll, { passive: true });
     } else {
       document.removeEventListener("mousedown", handleOutsideClick);
       window.removeEventListener("scroll", handleScroll);

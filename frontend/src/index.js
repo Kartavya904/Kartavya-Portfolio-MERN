@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 // import "./index.css";
@@ -6,23 +6,32 @@ import Loading from "./components/SpecialComponents/Loading";
 
 const Root = () => {
   const [isReady, setIsReady] = useState(false);
-  const [isBatterySavingOn, setIsBatterySavingOn] = useState(true); // New state
+  const [isBatterySavingOn, setIsBatterySavingOn] = useState(false);
+  const [appMountDelayDone, setAppMountDelayDone] = useState(false);
 
-  if (!isReady) {
-    return (
-      <Loading
-        isBatterySavingOn={isBatterySavingOn}
-        setIsBatterySavingOn={setIsBatterySavingOn}
-        onComplete={() => setIsReady(true)}
-      />
-    );
-  }
+  // Show loading first; mount app behind it after 400ms (first greeting visible)
+  useEffect(() => {
+    const t = setTimeout(() => setAppMountDelayDone(true), 400);
+    return () => clearTimeout(t);
+  }, []);
 
   return (
-    <App
-      isBatterySavingOn={isBatterySavingOn}
-      setIsBatterySavingOn={setIsBatterySavingOn}
-    />
+    <>
+      {appMountDelayDone && (
+        <App
+          isBatterySavingOn={isBatterySavingOn}
+          setIsBatterySavingOn={setIsBatterySavingOn}
+          isLoadingComplete={isReady}
+        />
+      )}
+      {!isReady && (
+        <Loading
+          isBatterySavingOn={isBatterySavingOn}
+          setIsBatterySavingOn={setIsBatterySavingOn}
+          onComplete={() => setIsReady(true)}
+        />
+      )}
+    </>
   );
 };
 
@@ -31,5 +40,5 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <Root />
-  </React.StrictMode>
+  </React.StrictMode>,
 );

@@ -57,101 +57,92 @@ const NavBar = ({ isBatterySavingOn, addTab }) => {
   }, []);
 
   useEffect(() => {
-    let scrollTimer = null; // Timer to detect scroll end
+    let scrollTimer = null;
+    let rafId = null;
+    let lastScrollY = window.scrollY;
 
     const handleScroll = () => {
-      // Query on each scroll so we see all sections after lazy-loaded content has mounted
-      const sections = document.querySelectorAll("section");
-      const navLinks = document.querySelectorAll(
-        "nav .navbar-menu .navbar-links .navbar-link"
-      );
-      if (!sections.length || !navLinks.length) return;
+      lastScrollY = window.scrollY;
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const sections = document.querySelectorAll("section");
+        const navLinks = document.querySelectorAll(
+          "nav .navbar-menu .navbar-links .navbar-link",
+        );
+        if (!sections.length || !navLinks.length) return;
 
-      // Clear any existing timer
-      if (scrollTimer) {
-        clearTimeout(scrollTimer);
-      }
-
-      // Update active links dynamically during scroll
-      sections.forEach((section) => {
-        let top = window.scrollY;
-        let offset = section.offsetTop - 53; // Adjust for header height
-        let height = section.offsetHeight;
-        let id = section.getAttribute("id");
-
-        if (id && top >= offset && top < offset + height) {
-          navLinks.forEach((link) => {
-            link.classList.remove("active");
-            if (link.getAttribute("href") === `#${id}`) {
-              link.classList.add("active");
-            }
-          });
-        }
-      });
-
-      // Set a new timer to detect scroll end
-      scrollTimer = setTimeout(() => {
-        let nearestSection = null;
-        let nearestDistance = Infinity;
+        if (scrollTimer) clearTimeout(scrollTimer);
 
         sections.forEach((section) => {
-          const offset = section.offsetTop - 52; // Adjust for header height
+          const top = lastScrollY;
+          const offset = section.offsetTop - 53;
           const height = section.offsetHeight;
-          const sectionCenter = offset + height / 2;
-          const viewportCenter = window.scrollY + window.innerHeight / 2;
-          const distance = Math.abs(sectionCenter - viewportCenter);
+          const id = section.getAttribute("id");
 
-          if (distance < nearestDistance) {
-            nearestSection = section;
-            nearestDistance = distance;
+          if (id && top >= offset && top < offset + height) {
+            navLinks.forEach((link) => {
+              link.classList.remove("active");
+              if (link.getAttribute("href") === `#${id}`) {
+                link.classList.add("active");
+              }
+            });
           }
         });
 
-        // Snap to the nearest section if within snapping range
-        if (nearestSection && nearestDistance <= 180) {
-          const id = nearestSection.getAttribute("id");
-          if (id && id !== "contact" && id !== "projects") {
-            scrollToSection(id);
+        scrollTimer = setTimeout(() => {
+          let nearestSection = null;
+          let nearestDistance = Infinity;
+          sections.forEach((section) => {
+            const offset = section.offsetTop - 52;
+            const height = section.offsetHeight;
+            const sectionCenter = offset + height / 2;
+            const viewportCenter = window.scrollY + window.innerHeight / 2;
+            const distance = Math.abs(sectionCenter - viewportCenter);
+            if (distance < nearestDistance) {
+              nearestSection = section;
+              nearestDistance = distance;
+            }
+          });
+          if (nearestSection && nearestDistance <= 180) {
+            const id = nearestSection.getAttribute("id");
+            if (id && id !== "contact" && id !== "projects") {
+              scrollToSection(id);
+            }
           }
-        }
-      }, 1000); // Adjust debounce delay as needed (100ms here)
+        }, 200);
+      });
     };
 
-    // Add the scroll event listener
-    window.addEventListener("scroll", handleScroll);
-    // Run once after a tick so initial active state is correct once lazy content is in the DOM
-    const initialTimer = setTimeout(handleScroll, 100);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    const initialTimer = setTimeout(handleScroll, 150);
 
-    // Clean up event listener on component unmount
     return () => {
       clearTimeout(initialTimer);
-      if (scrollTimer) {
-        clearTimeout(scrollTimer);
-      }
+      if (scrollTimer) clearTimeout(scrollTimer);
+      if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
   useEffect(() => {
-    // Initial check on load for screen size
     const initialCheck = () => {
-      if (window.scrollY > 100) {
-        setScrolled(true);
-      }
+      setScrolled(window.scrollY > 100);
     };
-
     initialCheck();
 
+    let rafId = null;
     const onScroll = () => {
-      if (window.scrollY > 100) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        setScrolled(window.scrollY > 100);
+      });
     };
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
+      if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };

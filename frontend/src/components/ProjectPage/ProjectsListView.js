@@ -7,7 +7,12 @@ import { fetchProjects } from "../../services/projectService";
 import LikeButton from "../SpecialComponents/LikeButton";
 import "../../styles/ProjectsListView.css";
 
-function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
+function ProjectsListView({
+  addTab,
+  isBatterySavingOn,
+  showFeatured,
+  initialProjectLink = null,
+}) {
   const parentRef = useRef(null);
   const titleRef = useRef(null);
   const [projects, setProjects] = useState([]);
@@ -312,9 +317,14 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
               key={`project-${project.projectTitle}-${index}`}
               ref={(el) => (cardRefs.current[index] = el)}
               className={
-                index === projects.length - 1
+                (index === projects.length - 1
                   ? "project-card  project-card-last"
-                  : "project-card"
+                  : "project-card") +
+                (initialProjectLink &&
+                (project.projectLink || "").toLowerCase() ===
+                  (initialProjectLink || "").toLowerCase()
+                  ? " project-card-initial-active"
+                  : "")
               }
               // initial={{ opacity: 0 }}
               // animate={{ opacity: 1 }}

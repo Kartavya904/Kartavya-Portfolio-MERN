@@ -66,7 +66,11 @@ const CustomArrow = ({ direction, onClick, imgSrc, label }) => {
 };
 
 // ---------------- HonorsTabPage Component ----------------
-const HonorsTabPage = ({ addTab, isBatterySavingOn }) => {
+const HonorsTabPage = ({
+  addTab,
+  isBatterySavingOn,
+  initialHonorsLink = null,
+}) => {
   const [honors, setHonors] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [activeSlide, setActiveSlide] = useState(0);
@@ -84,6 +88,16 @@ const HonorsTabPage = ({ addTab, isBatterySavingOn }) => {
     };
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!initialHonorsLink || honors.length === 0) return;
+    const index = honors.findIndex(
+      (h) =>
+        (h.honorsExperienceLink || "").toLowerCase() ===
+        (initialHonorsLink || "").toLowerCase(),
+    );
+    if (index >= 0) setActiveSlide(index);
+  }, [initialHonorsLink, honors]);
 
   const combinedLength = honors.length + reviews.length;
   const nextSlide = () => setActiveSlide((prev) => (prev + 1) % combinedLength);

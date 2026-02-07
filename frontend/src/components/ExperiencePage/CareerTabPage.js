@@ -66,7 +66,11 @@ const CustomArrow = ({ direction, onClick, imgSrc, label }) => {
 };
 
 // ---------------- CareerTabPage Component ----------------
-const CareerTabPage = ({ addTab, isBatterySavingOn }) => {
+const CareerTabPage = ({
+  addTab,
+  isBatterySavingOn,
+  initialExperienceLink = null,
+}) => {
   const [experiences, setExperiences] = useState([]);
   const [activeSlide, setActiveSlide] = useState(0);
 
@@ -81,6 +85,17 @@ const CareerTabPage = ({ addTab, isBatterySavingOn }) => {
     };
     getExperiences();
   }, []);
+
+  // When opened from URL with /experience/exp-link, make that experience the active slide
+  useEffect(() => {
+    if (!initialExperienceLink || experiences.length === 0) return;
+    const index = experiences.findIndex(
+      (e) =>
+        (e.experienceLink || "").toLowerCase() ===
+        (initialExperienceLink || "").toLowerCase(),
+    );
+    if (index >= 0) setActiveSlide(index);
+  }, [initialExperienceLink, experiences]);
 
   const nextSlide = () =>
     setActiveSlide((prev) => (prev + 1) % experiences.length);

@@ -57,7 +57,9 @@
   backdrop-filter: blur(10px);
   border-radius: 20px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out,
+  transition:
+    transform 0.3s ease-in-out,
+    box-shadow 0.3s ease-in-out,
     opacity 0.3s ease-in-out;
 }
 
@@ -89,6 +91,10 @@
 }
 
 /* Enhance shadow on hover */
+.project-card-initial-active {
+  box-shadow: 0 0 0 3px #fcbc1d;
+}
+
 .project-card:hover {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
   /* z-index: 10000; */

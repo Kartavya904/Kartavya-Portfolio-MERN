@@ -10,6 +10,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { animated } from "@react-spring/web";
 import axios from "axios";
 import { AppLoad } from "./services/variants";
+import { fetchProjectByLink } from "./services/projectService";
+import { fetchExperienceByLink } from "./services/experienceService";
+import { fetchInvolvementByLink } from "./services/involvementService";
+import { fetchHonorsExperienceByLink } from "./services/honorsExperienceService";
+import ResumePdf from "./assets/Singh_Kartavya_Resume2026.pdf";
 import "./App.css";
 import Links from "./components/SpecialComponents/Links";
 import NavBar from "./components/SpecialComponents/NavBar";
@@ -26,10 +31,20 @@ const ContactPage = lazy(() => import("./components/ContactPage/ContactPage"));
 const WindowModal = lazy(() => import("./components/WindowModal/WindowModal"));
 // import { cleanupEventListeners } from "./services/eventListenerRegistry";
 
+const NAVBAR_OFFSET = 52;
+function scrollToSection(sectionId) {
+  const el = document.getElementById(sectionId);
+  if (!el) return;
+  const elementPosition = el.getBoundingClientRect().top;
+  const offsetPosition = elementPosition + window.scrollY - NAVBAR_OFFSET;
+  window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+}
+
 function App({
   isBatterySavingOn,
   setIsBatterySavingOn,
   isLoadingComplete = true,
+  initialUrlAction = null,
 }) {
   const [scrolled, setScrolled] = useState(window.scrollY > 100);
   const [loggedIn, setLoggedIn] = useState(false);
@@ -38,6 +53,11 @@ function App({
   const [isMinimized, setIsMinimized] = useState(false); // Track if modal is minimized
   const [lastActiveIndex, setLastActiveIndex] = useState(0); // Track active tab index
   const [isWindowModalVisible, setIsWindowModalVisible] = useState(false);
+  const [initialProjectLink, setInitialProjectLink] = useState(null);
+  const [initialExperienceLink, setInitialExperienceLink] = useState(null);
+  const [initialInvolvementLink, setInitialInvolvementLink] = useState(null);
+  const [initialHonorsLink, setInitialHonorsLink] = useState(null);
+  const [initialExperienceTab, setInitialExperienceTab] = useState(null);
 
   const API_URL = process.env.REACT_APP_API_URI;
   const MAX_QUERIES = 20;
@@ -368,6 +388,204 @@ function App({
     };
   }, []);
 
+  // After load + 400ms: scroll then (after delay) open modal so scrolling finishes first.
+  useEffect(() => {
+    if (!isLoadingComplete || !initialUrlAction) return;
+    const BASE_MS = 400;
+
+    if (initialUrlAction.triggerResumeDownload) {
+      const t = setTimeout(() => {
+        const a = document.createElement("a");
+        a.href = ResumePdf;
+        a.download = "Kartavya-Singh-Resume-2026.pdf";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }, BASE_MS);
+      return () => clearTimeout(t);
+    }
+
+    if (initialUrlAction.scrollTo) {
+      scrollToSection(initialUrlAction.scrollTo);
+    }
+    if (initialUrlAction.experienceTab) {
+      setInitialExperienceTab(initialUrlAction.experienceTab);
+    }
+
+    const openTab = initialUrlAction.openTab;
+    const resolveLink = initialUrlAction.resolveExperienceLink;
+
+    // Feed / Admin / AI: open modal immediately after scroll
+    if (
+      openTab &&
+      (openTab.type === "FeedTab" ||
+        openTab.type === "Admin" ||
+        openTab.type === "AIChatTab")
+    ) {
+      const t = setTimeout(() => addTab(openTab.type, openTab.data), BASE_MS);
+      return () => clearTimeout(t);
+    }
+
+    // Project with link: scroll to section → set link (highlight) → scroll to card → then open modal
+    if (openTab?.type === "Project" && openTab.projectLink) {
+      setInitialProjectLink(openTab.projectLink);
+      const t1 = setTimeout(() => {
+        const card = document.getElementById(openTab.projectLink);
+        if (card) card.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, BASE_MS + 1000);
+      const t2 = setTimeout(() => {
+        fetchProjectByLink(openTab.projectLink)
+          .then((data) => addTab("Project", data))
+          .catch((err) => {
+            console.error("Initial URL: failed to load project by link", err);
+            window.history.replaceState(null, "", window.location.origin + "/");
+            setInitialProjectLink(null);
+            scrollToSection("home");
+          });
+      }, BASE_MS + 2000);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+
+    // Experience / Involvement / Honors with link: scroll + set tab + set link → wait → open modal
+    if (openTab?.type === "Experience" && openTab.experienceLink) {
+      setInitialExperienceLink(openTab.experienceLink);
+      const t = setTimeout(() => {
+        fetchExperienceByLink(openTab.experienceLink)
+          .then((data) => addTab("Experience", data))
+          .catch((err) => {
+            console.error(
+              "Initial URL: failed to load experience by link",
+              err,
+            );
+            window.history.replaceState(null, "", window.location.origin + "/");
+            setInitialExperienceLink(null);
+            setInitialExperienceTab(null);
+            scrollToSection("home");
+          });
+      }, BASE_MS + 1200);
+      return () => clearTimeout(t);
+    }
+    if (openTab?.type === "Involvement" && openTab.involvementLink) {
+      setInitialInvolvementLink(openTab.involvementLink);
+      const t = setTimeout(() => {
+        fetchInvolvementByLink(openTab.involvementLink)
+          .then((data) => addTab("Involvement", data))
+          .catch((err) => {
+            console.error(
+              "Initial URL: failed to load involvement by link",
+              err,
+            );
+            window.history.replaceState(null, "", window.location.origin + "/");
+            setInitialInvolvementLink(null);
+            setInitialExperienceTab(null);
+            scrollToSection("home");
+          });
+      }, BASE_MS + 1200);
+      return () => clearTimeout(t);
+    }
+    if (openTab?.type === "Honors" && openTab.honorsExperienceLink) {
+      setInitialHonorsLink(openTab.honorsExperienceLink);
+      const t = setTimeout(() => {
+        fetchHonorsExperienceByLink(openTab.honorsExperienceLink)
+          .then((data) => addTab("Honors", data))
+          .catch((err) => {
+            console.error("Initial URL: failed to load honors by link", err);
+            window.history.replaceState(null, "", window.location.origin + "/");
+            setInitialHonorsLink(null);
+            setInitialExperienceTab(null);
+            scrollToSection("home");
+          });
+      }, BASE_MS + 1200);
+      return () => clearTimeout(t);
+    }
+
+    // /experience/:link or /experiences/:link — resolve which type (career / involvement / honors) then set tab + open modal
+    if (resolveLink) {
+      const tryResolve = () => {
+        fetchExperienceByLink(resolveLink)
+          .then((data) => {
+            setInitialExperienceTab("Career");
+            setInitialExperienceLink(resolveLink);
+            setTimeout(() => addTab("Experience", data), 100);
+          })
+          .catch(() =>
+            fetchInvolvementByLink(resolveLink)
+              .then((data) => {
+                setInitialExperienceTab("Involvement");
+                setInitialInvolvementLink(resolveLink);
+                setTimeout(() => addTab("Involvement", data), 100);
+              })
+              .catch(() =>
+                fetchHonorsExperienceByLink(resolveLink)
+                  .then((data) => {
+                    setInitialExperienceTab("Honors");
+                    setInitialHonorsLink(resolveLink);
+                    setTimeout(() => addTab("Honors", data), 100);
+                  })
+                  .catch((err) => {
+                    console.error(
+                      "Initial URL: could not resolve experience link",
+                      err,
+                    );
+                    window.history.replaceState(
+                      null,
+                      "",
+                      window.location.origin + "/",
+                    );
+                    setInitialExperienceTab(null);
+                    setInitialExperienceLink(null);
+                    setInitialInvolvementLink(null);
+                    setInitialHonorsLink(null);
+                    scrollToSection("home");
+                  }),
+              ),
+          );
+      };
+      const t = setTimeout(tryResolve, BASE_MS + 1000);
+      return () => clearTimeout(t);
+    }
+
+    return undefined;
+  }, [isLoadingComplete, initialUrlAction, addTab]);
+
+  // Clear initial link/tab when modal closes or after 6s
+  useEffect(() => {
+    if (!isClosed) return;
+    const id = setTimeout(() => {
+      setInitialProjectLink(null);
+      setInitialExperienceLink(null);
+      setInitialInvolvementLink(null);
+      setInitialHonorsLink(null);
+      setInitialExperienceTab(null);
+    }, 500);
+    return () => clearTimeout(id);
+  }, [isClosed]);
+  useEffect(() => {
+    if (
+      !initialProjectLink &&
+      !initialExperienceLink &&
+      !initialInvolvementLink &&
+      !initialHonorsLink
+    )
+      return;
+    const id = setTimeout(() => {
+      setInitialProjectLink(null);
+      setInitialExperienceLink(null);
+      setInitialInvolvementLink(null);
+      setInitialHonorsLink(null);
+      setInitialExperienceTab(null);
+    }, 6000);
+    return () => clearTimeout(id);
+  }, [
+    initialProjectLink,
+    initialExperienceLink,
+    initialInvolvementLink,
+    initialHonorsLink,
+  ]);
+
   // Must-load images are preloaded only in Loading.js (single place).
 
   // Low-power toggle is visual only (green/red dot); never reduce animations.
@@ -428,6 +646,7 @@ function App({
               addTab={addTab}
               isBatterySavingOn={batterySavingForBehavior}
               isWindowModalVisible={isWindowModalVisible}
+              initialProjectLink={initialProjectLink}
             />
           </Suspense>
         </div>
@@ -436,6 +655,10 @@ function App({
             addTab={addTab}
             isBatterySavingOn={batterySavingForBehavior}
             isWindowModalVisible={isWindowModalVisible}
+            initialExperienceTab={initialExperienceTab}
+            initialExperienceLink={initialExperienceLink}
+            initialInvolvementLink={initialInvolvementLink}
+            initialHonorsLink={initialHonorsLink}
           />
         </Suspense>
         <Suspense fallback={null}>

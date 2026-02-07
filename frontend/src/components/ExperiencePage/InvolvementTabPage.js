@@ -68,7 +68,11 @@ const CustomArrow = ({ direction, onClick, imgSrc, label }) => {
 };
 
 // ---------------- InvolvementTabPage Component ----------------
-const InvolvementTabPage = ({ addTab, isBatterySavingOn }) => {
+const InvolvementTabPage = ({
+  addTab,
+  isBatterySavingOn,
+  initialInvolvementLink = null,
+}) => {
   const [involvements, setInvolvements] = useState([]);
   const [activeSlide, setActiveSlide] = useState(0);
 
@@ -83,6 +87,16 @@ const InvolvementTabPage = ({ addTab, isBatterySavingOn }) => {
     };
     getInvolvements();
   }, []);
+
+  useEffect(() => {
+    if (!initialInvolvementLink || involvements.length === 0) return;
+    const index = involvements.findIndex(
+      (i) =>
+        (i.involvementLink || "").toLowerCase() ===
+        (initialInvolvementLink || "").toLowerCase(),
+    );
+    if (index >= 0) setActiveSlide(index);
+  }, [initialInvolvementLink, involvements]);
 
   // Navigation functions
   const nextSlide = () =>

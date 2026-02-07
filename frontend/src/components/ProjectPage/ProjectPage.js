@@ -6,7 +6,12 @@ import "../../styles/ProjectPage.css";
 import GradientBG from "./GradientBG"; // Adjust the path as necessary
 import ProjectsListView from "./ProjectsListView";
 
-function ProjectPage({ addTab, isBatterySavingOn, isWindowModalVisible }) {
+function ProjectPage({
+  addTab,
+  isBatterySavingOn,
+  isWindowModalVisible,
+  initialProjectLink = null,
+}) {
   const [showFeatured, setShowFeatured] = useState(false);
   return (
     <motion.section className="project-page-container" id="projects">
@@ -30,6 +35,7 @@ function ProjectPage({ addTab, isBatterySavingOn, isWindowModalVisible }) {
           addTab={addTab}
           isBatterySavingOn={isBatterySavingOn}
           showFeatured={showFeatured}
+          initialProjectLink={initialProjectLink}
         />
       </motion.div>
     </motion.section>

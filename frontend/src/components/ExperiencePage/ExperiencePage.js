@@ -62,11 +62,26 @@ const ExperiencePage = ({
   addTab,
   isBatterySavingOn,
   isWindowModalVisible,
+  initialExperienceTab = null,
+  initialExperienceLink = null,
+  initialInvolvementLink = null,
+  initialHonorsLink = null,
 }) => {
-  const [selectedTab, setSelectedTab] = useState(tabs[1]); // Default tab is "Career"
+  const careerTab = tabs[1];
+  const [selectedTab, setSelectedTab] = useState(careerTab);
   const [ActiveComponent, setActiveComponent] = useState(
     () => selectedTab.component,
   );
+
+  // When URL specifies a tab (involvement/honors/career) or a link, switch to that tab
+  useEffect(() => {
+    if (!initialExperienceTab) return;
+    const tab = tabs.find((t) => t.title === initialExperienceTab);
+    if (tab) {
+      setSelectedTab(tab);
+      setActiveComponent(() => tab.component);
+    }
+  }, [initialExperienceTab]);
 
   useEffect(() => {
     let debounceTimer = null;
@@ -173,6 +188,9 @@ const ExperiencePage = ({
               <ActiveComponent
                 addTab={addTab}
                 isBatterySavingOn={isBatterySavingOn}
+                initialExperienceLink={initialExperienceLink}
+                initialInvolvementLink={initialInvolvementLink}
+                initialHonorsLink={initialHonorsLink}
               />
             </motion.div>
           </motion.div>

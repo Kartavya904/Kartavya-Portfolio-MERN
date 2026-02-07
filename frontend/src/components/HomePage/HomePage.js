@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, memo } from "react";
 import { useSpeechInput } from "../../hooks/useSpeechInput";
 import { styled } from "@stitches/react";
 import { TypeAnimation } from "react-type-animation";
@@ -481,7 +481,7 @@ function HomePage({
   );
 }
 
-export default HomePage;
+export default memo(HomePage);
 
 // Styled Components for Button
 const ButtonPart = styled("span", {

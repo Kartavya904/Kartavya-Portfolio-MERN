@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { zoomIn } from "../../services/variants";
 import Background from "./Background";
@@ -69,6 +69,9 @@ const ExperiencePage = ({
   );
 
   useEffect(() => {
+    let debounceTimer = null;
+    const RESIZE_DEBOUNCE_MS = 150;
+
     const updateScale = () => {
       const tabsWrapper = document.querySelector(".tabs-wrapper");
       const slideContainer = document.querySelector(".content-container");
@@ -83,9 +86,20 @@ const ExperiencePage = ({
       slideContainer.style.zoom = `${scaleValue}`;
     };
 
+    const handleResize = () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        debounceTimer = null;
+        updateScale();
+      }, RESIZE_DEBOUNCE_MS);
+    };
+
     updateScale();
-    window.addEventListener("resize", updateScale);
-    return () => window.removeEventListener("resize", updateScale);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   return (
@@ -171,4 +185,4 @@ const ExperiencePage = ({
   );
 };
 
-export default ExperiencePage;
+export default memo(ExperiencePage);

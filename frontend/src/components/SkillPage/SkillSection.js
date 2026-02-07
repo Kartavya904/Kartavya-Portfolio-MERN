@@ -137,7 +137,7 @@ const SkillSection = ({ isBatterySavingOn }) => {
   const glideRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMediumWidth, setIsMediumWidth] = useState(
-    window.innerWidth <= 992 && window.innerWidth > 768
+    window.innerWidth <= 992 && window.innerWidth > 768,
   );
   const [autoplay, setAutoplay] = useState(true); // Autoplay state
   const [countdown, setCountdown] = useState(4); // Countdown timer
@@ -283,9 +283,9 @@ const SkillSection = ({ isBatterySavingOn }) => {
                                 proficiencyColor.default
                               }, 
                 0 0 ${window.innerWidth > 768 ? 12.5 : 5}px ${
-                                proficiencyColor[skill.proficiency] ||
-                                proficiencyColor.default
-                              }`,
+                  proficiencyColor[skill.proficiency] ||
+                  proficiencyColor.default
+                }`,
                             }}
                             variants={
                               isBatterySavingOn
@@ -294,7 +294,7 @@ const SkillSection = ({ isBatterySavingOn }) => {
                                     "right",
                                     50, // Reduced size for a more subtle animation
                                     skillIndex * 0.075, // Stagger delay for each skill
-                                    0.4 // Shorter duration for smoother animations
+                                    0.4, // Shorter duration for smoother animations
                                   )
                             }
                             initial="hidden"
@@ -332,7 +332,7 @@ const SkillSection = ({ isBatterySavingOn }) => {
                                     "left",
                                     50, // Reduced size for a more subtle animation
                                     skillIndex * 0.075, // Match stagger delay
-                                    0.4 // Match duration for consistent animations
+                                    0.4, // Match duration for consistent animations
                                   )
                             }
                             initial="hidden"

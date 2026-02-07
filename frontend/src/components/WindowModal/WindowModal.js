@@ -1,16 +1,24 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import "../../styles/WindowModal.css";
 import windowIcon from "../../assets/img/icons/window.svg";
-import AdminTab from "./AdminTab"; // Add this import
-import ProjectTab from "./ProjectTab";
-import ExperienceTab from "./ExperienceTab";
-import InvolvementTab from "./InvolvementTab";
-import HonorsTab from "./HonorsTab";
-import YearInReviewTab from "./YearInReviewTab";
-import ProjectsListView from "../ProjectPage/ProjectsListView";
-import FeedTab from "./FeedTab";
-import AIChatTab from "./AIChatTab";
+
+// Lazy-load tab content so heavy chunks load only when the user opens that tab
+const AdminTab = lazy(() => import("./AdminTab"));
+const ProjectTab = lazy(() => import("./ProjectTab"));
+const ExperienceTab = lazy(() => import("./ExperienceTab"));
+const InvolvementTab = lazy(() => import("./InvolvementTab"));
+const HonorsTab = lazy(() => import("./HonorsTab"));
+const YearInReviewTab = lazy(() => import("./YearInReviewTab"));
+const ProjectsListView = lazy(() => import("../ProjectPage/ProjectsListView"));
+const FeedTab = lazy(() => import("./FeedTab"));
+const AIChatTab = lazy(() => import("./AIChatTab"));
+
+const TabFallback = () => (
+  <div style={{ padding: 24, textAlign: "center", color: "var(--text)" }}>
+    Loading…
+  </div>
+);
 
 const WindowModal = ({
   tabs,
@@ -187,44 +195,50 @@ const WindowModal = ({
   }, [isClosed, isMinimized, scrolled]);
 
   const renderTabContent = (type, data) => {
+    const wrap = (node) =>
+      node ? <Suspense fallback={<TabFallback />}>{node}</Suspense> : null;
     switch (type) {
       case "Project":
-        return <ProjectTab data={data} isBatterySavingOn={isBatterySavingOn} />;
+        return wrap(
+          <ProjectTab data={data} isBatterySavingOn={isBatterySavingOn} />,
+        );
       case "Experience":
-        return (
-          <ExperienceTab data={data} isBatterySavingOn={isBatterySavingOn} />
+        return wrap(
+          <ExperienceTab data={data} isBatterySavingOn={isBatterySavingOn} />,
         );
       case "Involvement":
-        return (
-          <InvolvementTab data={data} isBatterySavingOn={isBatterySavingOn} />
+        return wrap(
+          <InvolvementTab data={data} isBatterySavingOn={isBatterySavingOn} />,
         );
       case "Honors":
-        return <HonorsTab data={data} isBatterySavingOn={isBatterySavingOn} />;
+        return wrap(
+          <HonorsTab data={data} isBatterySavingOn={isBatterySavingOn} />,
+        );
       case "YearInReview":
-        return (
-          <YearInReviewTab data={data} isBatterySavingOn={isBatterySavingOn} />
+        return wrap(
+          <YearInReviewTab data={data} isBatterySavingOn={isBatterySavingOn} />,
         );
       case "ProjectsListView":
-        return (
+        return wrap(
           <ProjectsListView
             addTab={addTab}
             isBatterySavingOn={isBatterySavingOn}
             showStarred={false}
-          />
+          />,
         );
-      case "Admin": // Add this new case
-        return (
+      case "Admin":
+        return wrap(
           <AdminTab
             data={data}
             isBatterySavingOn={isBatterySavingOn}
             loggedIn={loggedIn}
             setLoggedIn={setLoggedIn}
-          />
+          />,
         );
       case "FeedTab":
-        return <FeedTab isBatterySavingOn={isBatterySavingOn} />;
+        return wrap(<FeedTab isBatterySavingOn={isBatterySavingOn} />);
       case "AIChatTab":
-        return (
+        return wrap(
           <AIChatTab
             scrolled={scrolled}
             isMinimized={isMinimized}
@@ -255,7 +269,7 @@ const WindowModal = ({
             cancelRef={cancelRef}
             sendQuery={sendQuery}
             stopGenerating={stopGenerating}
-          />
+          />,
         );
       default:
         return null;
@@ -522,7 +536,7 @@ const WindowModal = ({
                   {tabs.length > 0 &&
                     renderTabContent(
                       tabs[lastActiveIndex]?.type,
-                      tabs[lastActiveIndex]?.data
+                      tabs[lastActiveIndex]?.data,
                     )}
                 </motion.div>
               </div>

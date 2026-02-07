@@ -55,8 +55,8 @@ const Background = () => {
               ? "l"
               : "r"
             : velocity.y > 0
-            ? "t"
-            : "b";
+              ? "t"
+              : "b";
       }
 
       star.z = STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE);

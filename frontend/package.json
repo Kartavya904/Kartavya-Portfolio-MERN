@@ -28,6 +28,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "analyze": "source-map-explorer build/static/js/*.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -58,6 +59,7 @@
     "eslint-config-react-app": "^7.0.1",
     "javascript-obfuscator": "^4.1.1",
     "nth-check": "^2.1.1",
-    "resolve-url-loader": "^5.0.0"
+    "resolve-url-loader": "^5.0.0",
+    "source-map-explorer": "^2.5.3"
   }
 }

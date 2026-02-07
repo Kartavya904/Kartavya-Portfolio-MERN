@@ -23,7 +23,7 @@ ChartJS.register(
   LineElement,
   Filler,
   Tooltip,
-  Legend
+  Legend,
 );
 
 const CustomLeftArrow = ({ onClick }) => (
@@ -164,11 +164,20 @@ const SkillGraphCarousel = ({ skills, isBatterySavingOn }) => {
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
   useEffect(() => {
+    let debounceTimer = null;
+    const RESIZE_DEBOUNCE_MS = 150;
     const handleResize = () => {
-      setScreenWidth(window.innerWidth);
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        debounceTimer = null;
+        setScreenWidth(window.innerWidth);
+      }, RESIZE_DEBOUNCE_MS);
     };
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   return (

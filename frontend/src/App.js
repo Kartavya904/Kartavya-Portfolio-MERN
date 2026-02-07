@@ -409,7 +409,11 @@ function App({
           setIsBatterySavingOn={setIsBatterySavingOn}
           scrolled={scrolled}
         />
-        <NavBar isBatterySavingOn={batterySavingForBehavior} addTab={addTab} />
+        <NavBar
+          isBatterySavingOn={batterySavingForBehavior}
+          addTab={addTab}
+          scrolled={scrolled}
+        />
         <Suspense fallback={null}>
           <HomePage
             isBatterySavingOn={batterySavingForBehavior}

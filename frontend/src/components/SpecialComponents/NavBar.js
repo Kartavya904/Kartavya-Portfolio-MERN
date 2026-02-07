@@ -4,9 +4,8 @@ import { motion } from "framer-motion";
 import { fadeIn } from "../../services/variants";
 import "../../styles/NavBar.css";
 
-const NavBar = ({ isBatterySavingOn, addTab }) => {
+const NavBar = ({ isBatterySavingOn, addTab, scrolled = false }) => {
   const [activeLink, setActiveLink] = useState("home");
-  const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
   const menuRef = useRef(null); // Reference to the navbar menu
@@ -125,28 +124,7 @@ const NavBar = ({ isBatterySavingOn, addTab }) => {
     };
   }, []);
 
-  useEffect(() => {
-    const initialCheck = () => {
-      setScrolled(window.scrollY > 100);
-    };
-    initialCheck();
-
-    let rafId = null;
-    const onScroll = () => {
-      if (rafId !== null) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        setScrolled(window.scrollY > 100);
-      });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      if (rafId !== null) cancelAnimationFrame(rafId);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
-  }, []);
+  // scrolled is passed from App (single source); no local scroll listener here
 
   // Close menu when clicking outside
   useEffect(() => {

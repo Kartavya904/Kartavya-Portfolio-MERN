@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, memo } from "react";
 import { motion } from "framer-motion";
 import { zoomIn } from "../../services/variants";
 import { styled, keyframes } from "@stitches/react";
@@ -36,7 +36,7 @@ function ProjectPage({ addTab, isBatterySavingOn, isWindowModalVisible }) {
   );
 }
 
-export default ProjectPage;
+export default memo(ProjectPage);
 
 // Styled Components for Button Parts
 const ButtonPart = styled("span", {

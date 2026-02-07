@@ -60,14 +60,14 @@ function ImagesCarousel({ data, title, isBatterySavingOn }) {
         root: containerRef.current,
         rootMargin: "50px", // Start loading 50px before entering viewport
         threshold: 0.1, // Trigger when 10% of element is visible
-      }
+      },
     );
 
     // Wait for Swiper to render, then observe all image containers
     const timeoutId = setTimeout(() => {
       if (containerRef.current) {
         const imageContainers = containerRef.current.querySelectorAll(
-          ".project-window-img-bg[data-lazy-img]"
+          ".project-window-img-bg[data-lazy-img]",
         );
         imageContainers.forEach((container) => {
           observer.observe(container);

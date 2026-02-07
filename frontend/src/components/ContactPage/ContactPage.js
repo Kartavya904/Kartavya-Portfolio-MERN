@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, memo } from "react";
 import { zoomIn, fadeIn } from "../../services/variants";
 import { motion, AnimatePresence } from "framer-motion";
 import { styled, keyframes } from "@stitches/react";
@@ -331,7 +331,7 @@ function ContactPage({ isBatterySavingOn, addTab }) {
   );
 }
 
-export default ContactPage;
+export default memo(ContactPage);
 
 const fillGreen = keyframes({
   "0%": { backgroundColor: "#edeeef", color: "#212529" }, // Initial yellow color

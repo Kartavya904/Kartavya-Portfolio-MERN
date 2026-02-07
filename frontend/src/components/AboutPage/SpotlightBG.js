@@ -46,13 +46,13 @@ export const SpotlightBG = () => {
     const range = endStop.offset - startStop.offset;
     const localT = range === 0 ? 0 : (t - startStop.offset) / range;
     const r = Math.round(
-      startStop.color[0] + localT * (endStop.color[0] - startStop.color[0])
+      startStop.color[0] + localT * (endStop.color[0] - startStop.color[0]),
     );
     const g = Math.round(
-      startStop.color[1] + localT * (endStop.color[1] - startStop.color[1])
+      startStop.color[1] + localT * (endStop.color[1] - startStop.color[1]),
     );
     const b = Math.round(
-      startStop.color[2] + localT * (endStop.color[2] - startStop.color[2])
+      startStop.color[2] + localT * (endStop.color[2] - startStop.color[2]),
     );
     return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   };
@@ -135,7 +135,7 @@ export const SpotlightBG = () => {
     const drawGrid = () => {
       const now = Date.now();
       paintedHexagons.current = paintedHexagons.current.filter(
-        (hex) => now - hex.timestamp < 2000
+        (hex) => now - hex.timestamp < 2000,
       );
       gridPointsRef.current.forEach(({ x, y, t }) => {
         const dx = x - mouse.current.x;
@@ -147,7 +147,7 @@ export const SpotlightBG = () => {
         if (y <= animationLine) opacity += 0.15;
         opacity = Math.min(Math.max(opacity, 0), 1);
         const isPainted = paintedHexagons.current.some(
-          (hex) => hex.x === x && hex.y === y
+          (hex) => hex.x === x && hex.y === y,
         );
         drawHexagon(x, y, t, opacity, isPainted);
       });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, memo } from "react";
 import { motion } from "framer-motion";
 import { zoomIn, fadeIn } from "../../services/variants";
 import { styled } from "@stitches/react";
@@ -236,7 +236,7 @@ function AboutPage({ isBatterySavingOn, isWindowModalVisible, addTab }) {
   );
 }
 
-export default AboutPage;
+export default memo(AboutPage);
 
 // Styled Components for Custom Button
 // Styled Components (Stitches / similar) for a responsive Custom Button

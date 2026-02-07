@@ -4,6 +4,35 @@ import App from "./App";
 // import "./index.css";
 import Loading from "./components/SpecialComponents/Loading";
 
+class ErrorBoundary extends React.Component {
+  state = { hasError: false };
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error, info) {
+    console.error("App error:", error, info?.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div
+          style={{ padding: 24, textAlign: "center", fontFamily: "sans-serif" }}
+        >
+          <h1>Something went wrong</h1>
+          <p>Try refreshing the page.</p>
+          <button
+            type="button"
+            onClick={() => this.setState({ hasError: false })}
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 console.log(
   "%cHey there, developer. I see you. 👀",
   "font-weight: bold; font-size: 14px;",
@@ -48,6 +77,8 @@ const Root = () => {
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <Root />
+    <ErrorBoundary>
+      <Root />
+    </ErrorBoundary>
   </React.StrictMode>,
 );

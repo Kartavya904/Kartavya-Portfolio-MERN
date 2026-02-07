@@ -9,9 +9,13 @@ import "../../styles/ProjectsListView.css";
 
 function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
   const parentRef = useRef(null);
+  const titleRef = useRef(null);
   const [projects, setProjects] = useState([]);
   const [cardStates, setCardStates] = useState([]);
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [isWide, setIsWide] = useState(
+    typeof window !== "undefined" ? window.innerWidth > 768 : true,
+  );
 
   // Create an array of refs for each project card
   const cardRefs = useRef([]);
@@ -57,25 +61,52 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
     getProjects();
   }, [showFeatured]);
 
-  // Whenever the window resizes, or if you want to force a recalc,
-  // increment layoutTrigger so the effect below re-runs.
+  // Single debounced resize: updates layoutTrigger, zoom (scale), and isWide. No behavior change.
+  const RESIZE_DEBOUNCE_MS = 150;
   useEffect(() => {
-    function handleResize() {
-      setLayoutTrigger((prev) => prev + 1);
-    }
+    let debounceTimer = null;
+
+    const updateScale = () => {
+      const containerEl = parentRef.current;
+      const titleEl = titleRef.current;
+      if (!containerEl || !titleEl) return;
+      const screenHeight = window.innerHeight;
+      const screenWidth = window.innerWidth;
+      let scaleValue = 1;
+      if (screenHeight < 700 && screenWidth > 576) {
+        scaleValue = screenHeight / 700;
+      }
+      containerEl.style.zoom = `${scaleValue}`;
+      titleEl.style.zoom = `${scaleValue}`;
+    };
+
+    const handleResize = () => {
+      setIsWide(window.innerWidth > 768);
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        debounceTimer = null;
+        setLayoutTrigger((prev) => prev + 1);
+        updateScale();
+      }, RESIZE_DEBOUNCE_MS);
+    };
+
+    updateScale();
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    return () => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   // Sticky header: run only after user stops scrolling (debounce) so scroll stays smooth.
-  // Stacking (baseTopOffset, offsetSpacing) is unchanged — computed in layout effect below.
+  // Uses refs instead of querySelector; behavior unchanged.
   useEffect(() => {
     let debounceTimer = null;
     const STICKY_DEBOUNCE_MS = 120;
 
     const runStickyLogic = () => {
-      const header = document.querySelector(".project-section-title");
-      const lastCard = document.querySelector(".project-card-last");
+      const header = titleRef.current;
+      const lastCard = parentRef.current?.lastElementChild;
       if (!header || !lastCard) return;
       const titleStyles = window.getComputedStyle(header);
       const titleMarginTop = parseFloat(titleStyles.marginTop) || 0;
@@ -102,11 +133,21 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
     };
   }, []);
 
-  // Recalculate layout whenever projects, battery mode, or layoutTrigger changes
+  // Recalculate layout whenever projects, battery mode, or layoutTrigger changes. Uses refs; runs in rAF to avoid blocking.
+  const mountedRef = useRef(true);
   useEffect(() => {
-    if (projects.length > 0 && parentRef.current) {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    if (projects.length === 0 || !parentRef.current) return;
+    const rafId = requestAnimationFrame(() => {
+      if (!mountedRef.current) return;
       const containerEl = parentRef.current;
-      const titleEl = document.querySelector(".project-section-title");
+      const titleEl = titleRef.current;
+      if (!containerEl) return;
 
       // 1) .project-section-title margins & height
       let titleHeight = 0,
@@ -164,10 +205,12 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
         titleEl.style.top = `${52 + 2 * titleMarginTop}px`; // optional
       }
 
+      if (!mountedRef.current) return;
       setBaseTopOffset(baseOffset);
       setOffsetSpacing(spacing);
       setLastCardMargin(0); // last card margin bottom is 0
-    }
+    });
+    return () => cancelAnimationFrame(rafId);
   }, [projects, isBatterySavingOn, layoutTrigger, lastCardMargin]);
 
   // Best implementation: dynamically calculate and scroll to the target card using refs.
@@ -249,29 +292,11 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
     );
   };
 
-  useEffect(() => {
-    const updateScale = () => {
-      const projectContainer = document.querySelector(".project-container");
-      const projectHeader = document.querySelector(".project-section-title");
-      if (!projectContainer || !projectHeader) return;
-      const screenHeight = window.innerHeight;
-      const screenWidth = window.innerWidth;
-      let scaleValue = 1;
-      if (screenHeight < 700 && screenWidth > 576) {
-        scaleValue = screenHeight / 700;
-      }
-      projectContainer.style.zoom = `${scaleValue}`;
-      projectHeader.style.zoom = `${scaleValue}`;
-    };
-
-    updateScale();
-    window.addEventListener("resize", updateScale);
-    return () => window.removeEventListener("resize", updateScale);
-  }, []);
-
   return (
     <>
-      <h2 className="project-section-title">My Projects</h2>
+      <h2 ref={titleRef} className="project-section-title">
+        My Projects
+      </h2>
       <div ref={parentRef} className="project-container">
         {projects.map((project, index) => {
           const { mousePosition, isHovering } = cardStates[index] || {
@@ -356,9 +381,7 @@ function ProjectsListView({ addTab, isBatterySavingOn, showFeatured }) {
                 <div
                   style={{
                     display: "flex",
-                    flexDirection: `${
-                      window.innerWidth > 768 ? "row" : "column-reverse"
-                    }`,
+                    flexDirection: isWide ? "row" : "column-reverse",
                   }}
                 >
                   <div className="project-info" id={project.projectLink}>

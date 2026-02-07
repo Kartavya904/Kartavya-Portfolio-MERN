@@ -85,11 +85,11 @@ export default function GradientBG({
   // Cache darkened background colors.
   const darkenedStart = useMemo(
     () => darkenColor(gradientBackgroundStart, 20),
-    [gradientBackgroundStart]
+    [gradientBackgroundStart],
   );
   const darkenedEnd = useMemo(
     () => darkenColor(gradientBackgroundEnd, 20),
-    [gradientBackgroundEnd]
+    [gradientBackgroundEnd],
   );
 
   // Define circle animations and properties.
@@ -169,7 +169,7 @@ export default function GradientBG({
         0 - shiftX,
         0 - shiftY,
         canvas.width + shiftX,
-        canvas.height + shiftY
+        canvas.height + shiftY,
       );
       bgGrad.addColorStop(0, darkenedStart);
       bgGrad.addColorStop(1, darkenedEnd);
@@ -257,7 +257,7 @@ export default function GradientBG({
           0,
           mousePos.x,
           mousePos.y,
-          pointerRad
+          pointerRad,
         );
         pointerGrad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.8)`);
         pointerGrad.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, 0)`);

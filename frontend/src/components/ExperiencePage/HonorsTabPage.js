@@ -11,9 +11,25 @@ import { styled } from "@stitches/react";
 // ---------------- Slide Variants & Transition ----------------
 const slideVariants = {
   hidden: { opacity: 0, scale: 0.6, x: 0, rotateY: 0, z: -400, zIndex: 7 },
+  prevPrev: {
+    opacity: 0,
+    scale: 0.6,
+    x: -320,
+    rotateY: 20,
+    z: -400,
+    zIndex: 5,
+  },
   prev: { opacity: 0.8, scale: 0.8, x: -160, rotateY: 15, z: -200, zIndex: 9 },
-  next: { opacity: 0.8, scale: 0.8, x: 160, rotateY: -15, z: -200, zIndex: 9 },
   active: { opacity: 1, scale: 1, x: 0, rotateY: 0, z: 0, zIndex: 10 },
+  next: { opacity: 0.8, scale: 0.8, x: 160, rotateY: -15, z: -200, zIndex: 9 },
+  nextNext: {
+    opacity: 0,
+    scale: 0.6,
+    x: 320,
+    rotateY: -20,
+    z: -400,
+    zIndex: 5,
+  },
 };
 const slideTransition = {
   duration: 0.8,
@@ -83,16 +99,24 @@ const HonorsTabPage = ({ addTab, isBatterySavingOn }) => {
   };
 
   const n = combinedLength;
+  const prevPrevIndex = (activeSlide - 2 + n) % n;
   const prevIndex = (activeSlide - 1 + n) % n;
   const nextIndex = (activeSlide + 1) % n;
-  const visibleIndices =
+  const nextNextIndex = (activeSlide + 2) % n;
+  const mountedIndices =
     n === 0
       ? []
       : n === 1
-      ? [0]
-      : n === 2
-      ? [activeSlide, nextIndex]
-      : [prevIndex, activeSlide, nextIndex];
+        ? [0]
+        : n === 2
+          ? [activeSlide, nextIndex]
+          : [
+              prevPrevIndex,
+              prevIndex,
+              activeSlide,
+              nextIndex,
+              nextNextIndex,
+            ].filter((idx, i, arr) => arr.indexOf(idx) === i);
 
   // ---------------- Advanced Swipe Logic ----------------
   const swipeConfidenceThreshold = 10000;
@@ -126,16 +150,20 @@ const HonorsTabPage = ({ addTab, isBatterySavingOn }) => {
           onDragEnd={handleDragEnd}
         >
           <AnimatePresence initial={false}>
-            {visibleIndices.map((index) => {
+            {mountedIndices.map((index) => {
               const { type, data } = getSlideData(index);
               const variant =
                 index === activeSlide
                   ? "active"
                   : index === prevIndex
-                  ? "prev"
-                  : index === nextIndex
-                  ? "next"
-                  : "hidden";
+                    ? "prev"
+                    : index === nextIndex
+                      ? "next"
+                      : index === prevPrevIndex
+                        ? "prevPrev"
+                        : index === nextNextIndex
+                          ? "nextNext"
+                          : "hidden";
               return (
                 <motion.div
                   key={`${type}-${index}`}
@@ -169,8 +197,8 @@ const HonorsTabPage = ({ addTab, isBatterySavingOn }) => {
                                       ...he,
                                       likesCount: (he.likesCount || 0) + 1,
                                     }
-                                  : he
-                              )
+                                  : he,
+                              ),
                             )
                           }
                         />
@@ -195,8 +223,8 @@ const HonorsTabPage = ({ addTab, isBatterySavingOn }) => {
                                       ...ri,
                                       likesCount: (ri.likesCount || 0) + 1,
                                     }
-                                  : ri
-                              )
+                                  : ri,
+                              ),
                             )
                           }
                         />
@@ -228,9 +256,9 @@ const HonorsTabPage = ({ addTab, isBatterySavingOn }) => {
                                 ? data.honorsExperienceSubTitle
                                 : null
                               : data.yearInReviewSubTitle &&
-                                data.yearInReviewSubTitle !== "NA"
-                              ? data.yearInReviewSubTitle
-                              : null}
+                                  data.yearInReviewSubTitle !== "NA"
+                                ? data.yearInReviewSubTitle
+                                : null}
                           </h4>
                           <p className="career-timeline">
                             {type === "honor"
@@ -239,9 +267,9 @@ const HonorsTabPage = ({ addTab, isBatterySavingOn }) => {
                                 ? data.honorsExperienceTimeline
                                 : null
                               : data.yearInReviewTimeline &&
-                                data.yearInReviewTimeline !== "NA"
-                              ? data.yearInReviewTimeline
-                              : null}
+                                  data.yearInReviewTimeline !== "NA"
+                                ? data.yearInReviewTimeline
+                                : null}
                           </p>
                           <p className="career-tagline">
                             {type === "honor"
@@ -250,9 +278,9 @@ const HonorsTabPage = ({ addTab, isBatterySavingOn }) => {
                                 ? data.honorsExperienceTagline
                                 : null
                               : data.yearInReviewTagline &&
-                                data.yearInReviewTagline !== "NA"
-                              ? data.yearInReviewTagline
-                              : null}
+                                  data.yearInReviewTagline !== "NA"
+                                ? data.yearInReviewTagline
+                                : null}
                           </p>
                         </div>
                         <motion.div

@@ -264,7 +264,10 @@ function HomePage({
                 />
               </motion.div>
             </div>
-            <div className="home-row info" style={{ zIndex: 99999 }}>
+            <div
+              className="home-row info"
+              style={{ zIndex: 99999, position: "relative" }}
+            >
               <motion.h1
                 className="name"
                 variants={isBatterySavingOn ? {} : zoomIn(0)}

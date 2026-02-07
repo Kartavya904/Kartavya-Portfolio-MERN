@@ -157,11 +157,7 @@ const ExperiencePage = ({
                   aria-label={tab.title}
                 >
                   {tab.icon}
-                  {selectedTab.title === tab.title ? (
-                    <span className="tab-text">{tab.title}</span>
-                  ) : (
-                    ""
-                  )}
+                  <span className="tab-text">{tab.title}</span>
                 </motion.button>
               ))}
             </motion.div>
@@ -173,6 +169,7 @@ const ExperiencePage = ({
               exit="hidden"
               viewport={{ once: true }}
             >
+              {/* Only the active tab's component is mounted; others are unmounted. */}
               <ActiveComponent
                 addTab={addTab}
                 isBatterySavingOn={isBatterySavingOn}

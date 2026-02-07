@@ -93,7 +93,7 @@ frontend/
 │       ├── ContactPage.css, ExperiencePage.css, FeedTab.css, Footer.css
 │       ├── HomePage.css, LikeButton.css, Links.css, Loading.css
 │       ├── NavBar.css, PowerMode.css, ProjectPage.css, ProjectsListView.css
-│       ├── ProjectTab.css, SkillPage.css, SkillSection.css, SkilllGraph.css
+│       ├── ProjectTab.css, SkillPage.css, SkillSection.css, SkillGraph.css
 │       └── WindowModal.css
 └── package.json, obfuscator.config.json
 ```
@@ -155,7 +155,7 @@ backend/
 ### 4.4 Section components (where to change page content)
 - **Home:** `frontend/src/components/HomePage/HomePage.js` — hero, CTA, can pass `addTab`, `sendQuery`.
 - **About:** `frontend/src/components/AboutPage/AboutPage.js` + `SpotlightBG.js`; styles: `AboutPage.css`.
-- **Skills:** `frontend/src/components/SkillPage/SkillPage.js`; uses `SkillSection.js`, `SkillGraph.js`, `SkillBG.js`; data from `getskillcomponents` / `getskills` (e.g. via `skillComponentService`, `skillService`); styles: `SkillPage.css`, `SkillSection.css`, `SkilllGraph.css`.
+- **Skills:** `frontend/src/components/SkillPage/SkillPage.js`; uses `SkillSection.js`, `SkillGraph.js`, `SkillBG.js`; data from `getskillcomponents` / `getskills` (e.g. via `skillComponentService`, `skillService`); styles: `SkillPage.css`, `SkillSection.css`, `SkillGraph.css`.
 - **Projects:** `frontend/src/components/ProjectPage/ProjectPage.js`, `ProjectsListView.js`, `GradientBG.js`; list/grid of projects, clicking opens ProjectTab with project data; styles: `ProjectPage.css`, `ProjectsListView.css`.
 - **Experience:** `frontend/src/components/ExperiencePage/ExperiencePage.js`; sub-views: CareerTabPage, HonorsTabPage, InvolvementTabPage; styles: `ExperiencePage.css`; opening an item opens ExperienceTab / InvolvementTab / HonorsTab.
 - **Contact:** `frontend/src/components/ContactPage/ContactPage.js`; styles: `ContactPage.css`.

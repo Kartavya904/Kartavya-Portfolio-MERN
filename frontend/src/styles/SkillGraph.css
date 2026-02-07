@@ -18,14 +18,18 @@
   overflow: hidden; /* Ensures no content overflows */
   padding: 5px;
   margin: 5px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth hover animations */
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease; /* Smooth hover animations */
 }
 
 .skill-image:hover {
-  box-shadow: 0px 6px 30px rgba(0, 0, 0, 0.7),
+  box-shadow:
+    0px 6px 30px rgba(0, 0, 0, 0.7),
     0px 0px 10px rgba(108, 188, 252, 0.7); /* Stronger glow on hover */
   border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border for the glass effect */
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.5),
+  box-shadow:
+    0px 4px 20px rgba(0, 0, 0, 0.5),
     0px 0px 7.5px rgba(108, 188, 252, 0.4);
 }
 
@@ -101,10 +105,12 @@
   }
 
   .skill-image {
-    box-shadow: 0px 6px 30px rgba(0, 0, 0, 0.7),
+    box-shadow:
+      0px 6px 30px rgba(0, 0, 0, 0.7),
       0px 0px 10px rgba(108, 188, 252, 0.7); /* Stronger glow on hover */
     border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border for the glass effect */
-    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.5),
+    box-shadow:
+      0px 4px 20px rgba(0, 0, 0, 0.5),
       0px 0px 7.5px rgba(108, 188, 252, 0.4);
     max-height: calc((40dvh - 52px) / 2);
     max-width: 90%;

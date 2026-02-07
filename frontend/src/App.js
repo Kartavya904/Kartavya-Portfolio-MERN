@@ -210,7 +210,6 @@ function App({
         { query: trimmed, conversationMemory },
       );
       const optimized = optRes.optimizedQuery || trimmed;
-      console.log(optimized);
       await delay(300); // let UI settle
 
       if (!cancelRef.current) {

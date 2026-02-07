@@ -163,6 +163,6 @@ src/styles/ProjectTab.css
 src/styles/ProjectsListView.css
 src/styles/SkillPage.css
 src/styles/SkillSection.css
-src/styles/SkilllGraph.css
+src/styles/SkillGraph.css
 src/styles/WindowModal.css
 PS D:\Desktop\All Projects\Kartavya-Portfolio-MERN\frontend> 

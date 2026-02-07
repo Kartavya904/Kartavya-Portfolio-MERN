@@ -10,9 +10,25 @@ import { styled } from "@stitches/react";
 // ---------------- Slide Variants & Transition ----------------
 const slideVariants = {
   hidden: { opacity: 0, scale: 0.6, x: 0, rotateY: 0, z: -400, zIndex: 7 },
+  prevPrev: {
+    opacity: 0,
+    scale: 0.6,
+    x: -320,
+    rotateY: 20,
+    z: -400,
+    zIndex: 5,
+  },
   prev: { opacity: 0.8, scale: 0.8, x: -160, rotateY: 15, z: -200, zIndex: 9 },
-  next: { opacity: 0.8, scale: 0.8, x: 160, rotateY: -15, z: -200, zIndex: 9 },
   active: { opacity: 1, scale: 1, x: 0, rotateY: 0, z: 0, zIndex: 10 },
+  next: { opacity: 0.8, scale: 0.8, x: 160, rotateY: -15, z: -200, zIndex: 9 },
+  nextNext: {
+    opacity: 0,
+    scale: 0.6,
+    x: 320,
+    rotateY: -20,
+    z: -400,
+    zIndex: 5,
+  },
 };
 const slideTransition = {
   duration: 0.8,
@@ -73,20 +89,28 @@ const InvolvementTabPage = ({ addTab, isBatterySavingOn }) => {
     setActiveSlide((prev) => (prev + 1) % involvements.length);
   const prevSlide = () =>
     setActiveSlide(
-      (prev) => (prev - 1 + involvements.length) % involvements.length
+      (prev) => (prev - 1 + involvements.length) % involvements.length,
     );
 
   const n = involvements.length;
+  const prevPrevIndex = (activeSlide - 2 + n) % n;
   const prevIndex = (activeSlide - 1 + n) % n;
   const nextIndex = (activeSlide + 1) % n;
-  const visibleIndices =
+  const nextNextIndex = (activeSlide + 2) % n;
+  const mountedIndices =
     n === 0
       ? []
       : n === 1
-      ? [0]
-      : n === 2
-      ? [activeSlide, nextIndex]
-      : [prevIndex, activeSlide, nextIndex];
+        ? [0]
+        : n === 2
+          ? [activeSlide, nextIndex]
+          : [
+              prevPrevIndex,
+              prevIndex,
+              activeSlide,
+              nextIndex,
+              nextNextIndex,
+            ].filter((idx, i, arr) => arr.indexOf(idx) === i);
 
   // Advanced swipe detection using swipe power (offset * velocity)
   const swipeConfidenceThreshold = 10000;
@@ -120,16 +144,20 @@ const InvolvementTabPage = ({ addTab, isBatterySavingOn }) => {
           onDragEnd={handleDragEnd}
         >
           <AnimatePresence initial={false}>
-            {visibleIndices.map((index) => {
+            {mountedIndices.map((index) => {
               const involvement = involvements[index];
               const variant =
                 index === activeSlide
                   ? "active"
                   : index === prevIndex
-                  ? "prev"
-                  : index === nextIndex
-                  ? "next"
-                  : "hidden";
+                    ? "prev"
+                    : index === nextIndex
+                      ? "next"
+                      : index === prevPrevIndex
+                        ? "prevPrev"
+                        : index === nextNextIndex
+                          ? "nextNext"
+                          : "hidden";
               return (
                 <motion.div
                   key={index}
@@ -159,8 +187,8 @@ const InvolvementTabPage = ({ addTab, isBatterySavingOn }) => {
                               i.involvementTitle ===
                               involvement.involvementTitle
                                 ? { ...i, likesCount: (i.likesCount || 0) + 1 }
-                                : i
-                            )
+                                : i,
+                            ),
                           )
                         }
                       />

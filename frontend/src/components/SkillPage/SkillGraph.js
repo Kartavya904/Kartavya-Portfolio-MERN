@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Carousel from "react-multi-carousel";
-import "../../styles/SkilllGraph.css";
+import "../../styles/SkillGraph.css";
 import { motion } from "framer-motion";
 import LeftArrow from "../../assets/img/icons/arrow1.svg";
 import RightArrow from "../../assets/img/icons/arrow2.svg";

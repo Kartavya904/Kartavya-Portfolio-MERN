@@ -314,6 +314,19 @@ const WindowModal = ({
     setIsMinimized(false); // Reset minimization
   };
 
+  // Close modal on Escape when expanded (improves UX and testability)
+  useEffect(() => {
+    if (tabs.length === 0 || isClosed || isMinimized) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        handleCloseModal();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [tabs.length, isClosed, isMinimized]);
+
   useEffect(() => {
     // Automatically restore the modal if it is minimized and a new tab is added
     if (isMinimized && tabs.length > 0) {

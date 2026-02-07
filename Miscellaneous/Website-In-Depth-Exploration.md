@@ -72,7 +72,7 @@ This document catalogs **every user-facing and developer-facing feature** of the
 | **Skill categories** | Categories from API (skillsCollection / skillsTable): e.g. Spoken Language, Tools & Platforms, Full Stack Development, Programming & Development, Data & AI. | SkillPage.js, fetchSkillsComponents / skillService, skillComponentService |
 | **Proficiency levels** | Proficient / Intermediate / Beginner ribbons or labels. | SkillPage.js, SkillSection.js |
 | **Skill icons** | Icons per skill (from assets or icon mapping). | icons.js, SkillSection |
-| **Charts** | Chart.js (or similar) for skill levels or distribution. | SkillGraph.js, SkillPage.css / SkilllGraph.css |
+| **Charts** | Chart.js (or similar) for skill levels or distribution. | SkillGraph.js, SkillPage.css / SkillGraph.css |
 | **Carousel(s)** | Carousel(s) for skill groups (e.g. react-multi-carousel, Swiper, Glide). | SkillPage.js |
 | **Background** | SkillBG component. | SkillPage/SkillBG.js |
 

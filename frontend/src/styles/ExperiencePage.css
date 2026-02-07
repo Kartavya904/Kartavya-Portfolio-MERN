@@ -36,7 +36,8 @@
   border-radius: 100px;
   background: rgba(27, 30, 34, 0.6);
   backdrop-filter: blur(5px);
-  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.8),
+  box-shadow:
+    4px 4px 8px rgba(0, 0, 0, 0.8),
     -4px -4px 12px rgba(58, 65, 73, 0.5),
     inset -2px -2px 4px rgba(58, 65, 73, 0.2),
     inset 2px 2px 6px rgba(0, 0, 0, 0.4);
@@ -48,7 +49,8 @@
 
 .tabs-wrapper:hover {
   transform: translateZ(20px) scale(1.02);
-  box-shadow: 6px 6px 16px rgba(0, 0, 0, 0.8),
+  box-shadow:
+    6px 6px 16px rgba(0, 0, 0, 0.8),
     -6px -6px 20px rgba(58, 65, 73, 0.6),
     inset -3px -3px 6px rgba(58, 65, 73, 0.3),
     inset 3px 3px 8px rgba(0, 0, 0, 0.5);
@@ -81,7 +83,7 @@
 }
 
 .tab-button:hover {
-  background-color: #fcbc1d;
+  background-color: rgba(252, 188, 29, 0.6);
   transition: all 0.3s ease;
 }
 
@@ -104,10 +106,27 @@
   color: #212529;
 }
 
+/* Label next to each tab icon: small white text so users see multiple tabs */
 .tab-text {
-  margin-left: 5px;
+  margin-left: 6px;
+  color: #edeeef;
+  font-size: 0.8rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.tab-button.active .tab-text {
   color: #212529;
   font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.tab-button:hover .tab-text {
+  color: #212529;
+}
+
+.tab-button.active:hover .tab-text {
+  color: #212529;
 }
 
 .content-container {
@@ -163,7 +182,8 @@
   border-radius: 30px;
   background: rgba(27, 30, 34, 0.6);
   backdrop-filter: blur(5px);
-  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.8),
+  box-shadow:
+    4px 4px 8px rgba(0, 0, 0, 0.8),
     -4px -4px 12px rgba(58, 65, 73, 0.5),
     inset -2px -2px 4px rgba(58, 65, 73, 0.2),
     inset 2px 2px 6px rgba(0, 0, 0, 0.4);
@@ -210,7 +230,9 @@
   align-items: center;
   justify-content: stretch;
   border-radius: 10px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .career-image {
@@ -266,7 +288,8 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-fill-color: transparent;
-  animation: gradientMove 3s ease-in-out infinite,
+  animation:
+    gradientMove 3s ease-in-out infinite,
     textShine 3s ease-in-out infinite;
 }
 
@@ -285,7 +308,8 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-fill-color: transparent;
-  animation: gradientMove 3s ease-in-out infinite,
+  animation:
+    gradientMove 3s ease-in-out infinite,
     textShine 3s ease-in-out infinite;
 }
 
@@ -304,7 +328,8 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   text-fill-color: transparent;
-  animation: gradientMove 1s ease-in-out infinite,
+  animation:
+    gradientMove 1s ease-in-out infinite,
     textShine 1.1s ease-in-out infinite;
 }
 

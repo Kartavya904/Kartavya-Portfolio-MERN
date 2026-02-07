@@ -10,9 +10,25 @@ import { styled } from "@stitches/react";
 // ---------------- Slide Variants & Transition ----------------
 const slideVariants = {
   hidden: { opacity: 0, scale: 0.6, x: 0, rotateY: 0, z: -400, zIndex: 7 },
+  prevPrev: {
+    opacity: 0,
+    scale: 0.6,
+    x: -320,
+    rotateY: 20,
+    z: -400,
+    zIndex: 5,
+  },
   prev: { opacity: 0.8, scale: 0.8, x: -160, rotateY: 15, z: -200, zIndex: 9 },
-  next: { opacity: 0.8, scale: 0.8, x: 160, rotateY: -15, z: -200, zIndex: 9 },
   active: { opacity: 1, scale: 1, x: 0, rotateY: 0, z: 0, zIndex: 10 },
+  next: { opacity: 0.8, scale: 0.8, x: 160, rotateY: -15, z: -200, zIndex: 9 },
+  nextNext: {
+    opacity: 0,
+    scale: 0.6,
+    x: 320,
+    rotateY: -20,
+    z: -400,
+    zIndex: 5,
+  },
 };
 
 const slideTransition = {
@@ -70,20 +86,29 @@ const CareerTabPage = ({ addTab, isBatterySavingOn }) => {
     setActiveSlide((prev) => (prev + 1) % experiences.length);
   const prevSlide = () =>
     setActiveSlide(
-      (prev) => (prev - 1 + experiences.length) % experiences.length
+      (prev) => (prev - 1 + experiences.length) % experiences.length,
     );
 
   const n = experiences.length;
+  const prevPrevIndex = (activeSlide - 2 + n) % n;
   const prevIndex = (activeSlide - 1 + n) % n;
   const nextIndex = (activeSlide + 1) % n;
-  const visibleIndices =
+  const nextNextIndex = (activeSlide + 2) % n;
+  // Only mount the 3 visible cards + one before and one after (5 max); unmount the rest
+  const mountedIndices =
     n === 0
       ? []
       : n === 1
-      ? [0]
-      : n === 2
-      ? [activeSlide, nextIndex]
-      : [prevIndex, activeSlide, nextIndex];
+        ? [0]
+        : n === 2
+          ? [activeSlide, nextIndex]
+          : [
+              prevPrevIndex,
+              prevIndex,
+              activeSlide,
+              nextIndex,
+              nextNextIndex,
+            ].filter((idx, i, arr) => arr.indexOf(idx) === i);
 
   // ---------------- Advanced Swipe Logic ----------------
   const swipeConfidenceThreshold = 10000;
@@ -120,16 +145,20 @@ const CareerTabPage = ({ addTab, isBatterySavingOn }) => {
           onDragEnd={handleDragEnd}
         >
           <AnimatePresence initial={false}>
-            {visibleIndices.map((index) => {
+            {mountedIndices.map((index) => {
               const experience = experiences[index];
               const variant =
                 index === activeSlide
                   ? "active"
                   : index === prevIndex
-                  ? "prev"
-                  : index === nextIndex
-                  ? "next"
-                  : "hidden";
+                    ? "prev"
+                    : index === nextIndex
+                      ? "next"
+                      : index === prevPrevIndex
+                        ? "prevPrev"
+                        : index === nextNextIndex
+                          ? "nextNext"
+                          : "hidden";
               return (
                 <motion.div
                   key={index}
@@ -158,8 +187,8 @@ const CareerTabPage = ({ addTab, isBatterySavingOn }) => {
                             prevExperiences.map((e) =>
                               e.experienceTitle === experience.experienceTitle
                                 ? { ...e, likesCount: (e.likesCount || 0) + 1 }
-                                : e
-                            )
+                                : e,
+                            ),
                           )
                         }
                       />

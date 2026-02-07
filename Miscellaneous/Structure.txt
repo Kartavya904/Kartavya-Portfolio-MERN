@@ -526,7 +526,7 @@ frontend/src/styles/ProjectTab.css
 frontend/src/styles/ProjectsListView.css
 frontend/src/styles/SkillPage.css
 frontend/src/styles/SkillSection.css
-frontend/src/styles/SkilllGraph.css
+frontend/src/styles/SkillGraph.css
 frontend/src/styles/WindowModal.css
 pricing.txt
 PS D:\Desktop\All Projects\Kartavya-Portfolio-MERN> 

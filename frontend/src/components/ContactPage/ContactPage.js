@@ -15,11 +15,20 @@ function ContactPage({ isBatterySavingOn, addTab }) {
   const [isDisabled, setIsDisabled] = useState(false);
   const [toasts, setToasts] = useState([]);
 
+  const toastMountedRef = useRef(true);
+  useEffect(() => {
+    toastMountedRef.current = true;
+    return () => {
+      toastMountedRef.current = false;
+    };
+  }, []);
+
   const addToast = (message, type) => {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, message, type }]);
-    // Auto-remove after 60 seconds
-    setTimeout(() => removeToast(id), 60000);
+    setTimeout(() => {
+      if (toastMountedRef.current) removeToast(id);
+    }, 60000);
   };
 
   const removeToast = (id) => {
@@ -51,16 +60,21 @@ function ContactPage({ isBatterySavingOn, addTab }) {
         )
         .then(
           (result) => {
-            addToast("Message sent successfully", "success");
-            setIsDisabled(true);
-            setTimeout(() => setIsDisabled(false), 120000); // re-enable after 2 min
+            if (toastMountedRef.current) {
+              addToast("Message sent successfully", "success");
+              setIsDisabled(true);
+            }
+            setTimeout(() => {
+              if (toastMountedRef.current) setIsDisabled(false);
+            }, 120000);
           },
           (error) => {
-            addToast("Failed to send message", "error");
+            if (toastMountedRef.current)
+              addToast("Failed to send message", "error");
           },
         );
 
-      e.target.reset(); // Clear the form fields after submission
+      e.target.reset();
     }, 200);
 
     e.target.reset();

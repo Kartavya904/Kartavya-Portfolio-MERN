@@ -7,6 +7,14 @@
   justify-content: center;
 }
 
+/* Placeholder for non-active radar slides: same dimensions, no chart (reduces DOM weight) */
+.skill-graph-placeholder {
+  min-height: 280px;
+  width: 90%;
+  margin: 0 auto;
+  pointer-events: none;
+}
+
 .skill-image {
   width: 90%;
   height: auto;

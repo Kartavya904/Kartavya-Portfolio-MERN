@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import "../../styles/Loading.css";
 import { pingBackend, pingDatabase } from "../../services/ping";
@@ -28,7 +28,9 @@ const Loading = ({ isBatterySavingOn, setIsBatterySavingOn, onComplete }) => {
 
   // Rotate greetings every 400ms and mark when all have been shown.
   useEffect(() => {
+    let mounted = true;
     const interval = setInterval(() => {
+      if (!mounted) return;
       setCurrentGreetingIndex((prevIndex) => {
         if (prevIndex + 1 === greetings.length) {
           setAllGreetingsShown(true);
@@ -36,33 +38,42 @@ const Loading = ({ isBatterySavingOn, setIsBatterySavingOn, onComplete }) => {
         return (prevIndex + 1) % greetings.length;
       });
     }, 400);
-    return () => clearInterval(interval);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Ref so async work only skips setState on real unmount, not when effect re-runs (e.g. when loaded changes).
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
   }, []);
 
   // Check backend and database status and then fire image preloading APIs.
   useEffect(() => {
     const checkStatus = async () => {
       try {
-        // const backendStatus = await pingBackend();
         const databaseStatus = await pingDatabase();
         const backendStatus = databaseStatus;
+        if (!mountedRef.current) return;
         setStatus({ backend: backendStatus, database: databaseStatus });
         if (backendStatus && databaseStatus) {
           setLoaded(true);
-          // Start must-load images preloading (these block loading completion)
           async function preloadMustLoadImages() {
             try {
               const response = await fetch(
                 `${process.env.REACT_APP_API_URI}/must-load-images`,
               );
               const urls = await response.json();
-              // console.log("Must-load Image URLs: ", urls);
-
+              if (!mountedRef.current) return;
               const skipPreload = (url) => {
                 const u = url && typeof url === "string" ? url : "";
                 return /system-user\.webp|user-icon\.svg/i.test(u);
               };
-              // For each must-load image, create and append a preload link (skip non–above-the-fold).
               urls
                 .filter((url) => !skipPreload(url))
                 .forEach((url) => {
@@ -72,8 +83,7 @@ const Loading = ({ isBatterySavingOn, setIsBatterySavingOn, onComplete }) => {
                   link.href = url;
                   document.head.appendChild(link);
                 });
-
-              // Mark images as ready (we assume the browser will handle preloading).
+              if (!mountedRef.current) return;
               setMustLoadImageStatus({
                 loaded: urls.length,
                 total: urls.length,
@@ -82,23 +92,20 @@ const Loading = ({ isBatterySavingOn, setIsBatterySavingOn, onComplete }) => {
               setImagesReady(true);
             } catch (error) {
               console.error("Error preloading must-load images:", error);
-              setMustLoadImageStatus((prev) => ({ ...prev, error: true }));
-              setImagesReady(true);
+              if (mountedRef.current) {
+                setMustLoadImageStatus((prev) => ({ ...prev, error: true }));
+                setImagesReady(true);
+              }
             }
           }
           preloadMustLoadImages();
-
-          // Dynamic images will be lazy-loaded when they come into view
-          // No need to preload all images upfront
         }
       } catch (error) {
         console.error("Error checking backend or database status:", error);
       }
     };
 
-    if (!loaded) {
-      checkStatus();
-    }
+    if (!loaded) checkStatus();
   }, [loaded]);
 
   // Device stats for loading-screen display only (no CPU test, no device-based low-power logic).

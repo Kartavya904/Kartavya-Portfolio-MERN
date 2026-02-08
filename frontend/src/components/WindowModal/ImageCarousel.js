@@ -13,11 +13,16 @@ function ImagesCarousel({ data, title, isBatterySavingOn }) {
   const containerRef = useRef(null);
 
   useEffect(() => {
+    let mounted = true;
     const handleResize = () => {
+      if (!mounted) return;
       setScreenWidth(window.innerWidth);
     };
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    return () => {
+      mounted = false;
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   // Always load the first image immediately for better UX
@@ -34,48 +39,50 @@ function ImagesCarousel({ data, title, isBatterySavingOn }) {
   // Lazy load images using Intersection Observer
   useEffect(() => {
     if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
-      // Fallback: load all images immediately if IntersectionObserver is not supported
-      setLoadedImages(new Set(data));
+      setLoadedImages(new Set(data || []));
       return;
     }
 
+    let mounted = true;
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            const imgUrl = entry.target.getAttribute("data-lazy-img");
-            if (imgUrl) {
-              setLoadedImages((prev) => {
-                const newSet = new Set(prev);
-                newSet.add(imgUrl);
-                return newSet;
-              });
-              // Stop observing once loaded
-              observer.unobserve(entry.target);
+        try {
+          if (!mounted) return;
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const imgUrl = entry.target.getAttribute("data-lazy-img");
+              if (imgUrl) {
+                setLoadedImages((prev) => {
+                  const newSet = new Set(prev);
+                  newSet.add(imgUrl);
+                  return newSet;
+                });
+                observer.unobserve(entry.target);
+              }
             }
-          }
-        });
+          });
+        } catch (e) {
+          if (process.env.NODE_ENV !== "production")
+            console.warn("[ImageCarousel IO]", e);
+        }
       },
       {
         root: containerRef.current,
-        rootMargin: "50px", // Start loading 50px before entering viewport
-        threshold: 0.1, // Trigger when 10% of element is visible
+        rootMargin: "50px",
+        threshold: 0.1,
       },
     );
 
-    // Wait for Swiper to render, then observe all image containers
     const timeoutId = setTimeout(() => {
-      if (containerRef.current) {
-        const imageContainers = containerRef.current.querySelectorAll(
-          ".project-window-img-bg[data-lazy-img]",
-        );
-        imageContainers.forEach((container) => {
-          observer.observe(container);
-        });
-      }
+      if (!mounted || !containerRef.current) return;
+      const imageContainers = containerRef.current.querySelectorAll(
+        ".project-window-img-bg[data-lazy-img]",
+      );
+      imageContainers.forEach((container) => observer.observe(container));
     }, 200);
 
     return () => {
+      mounted = false;
       clearTimeout(timeoutId);
       observer.disconnect();
     };

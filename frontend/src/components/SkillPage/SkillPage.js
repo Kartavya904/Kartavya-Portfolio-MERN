@@ -19,21 +19,54 @@ function SkillPage({ isBatterySavingOn, isWindowModalVisible }) {
   const [topLangs, setTopLangs] = useState({ labels: [], data: [] });
   const [skills, setSkills] = useState([]);
   const [chartsInView, setChartsInView] = useState(false);
+  const [carouselInView, setCarouselInView] = useState(false);
   const chartsSectionRef = useRef(null);
+  const carouselSectionRef = useRef(null);
 
   useEffect(() => {
+    let mounted = true;
     const el = chartsSectionRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        for (const entry of entries) {
-          setChartsInView(entry.isIntersecting);
+        try {
+          if (!mounted) return;
+          for (const entry of entries) setChartsInView(entry.isIntersecting);
+        } catch (e) {
+          if (process.env.NODE_ENV !== "production")
+            console.warn("[SkillPage charts IO]", e);
         }
       },
       { threshold: 0.1, rootMargin: "0px 0px 50px 0px" },
     );
     observer.observe(el);
-    return () => observer.disconnect();
+    return () => {
+      mounted = false;
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    const el = carouselSectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        try {
+          if (!mounted) return;
+          for (const entry of entries) setCarouselInView(entry.isIntersecting);
+        } catch (e) {
+          if (process.env.NODE_ENV !== "production")
+            console.warn("[SkillPage carousel IO]", e);
+        }
+      },
+      { threshold: 0.1, rootMargin: "0px 0px 50px 0px" },
+    );
+    observer.observe(el);
+    return () => {
+      mounted = false;
+      observer.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -268,11 +301,16 @@ function SkillPage({ isBatterySavingOn, isWindowModalVisible }) {
   }, []);
 
   useEffect(() => {
+    let mounted = true;
     const handleResize = () => {
+      if (!mounted) return;
       setSkillScreenWidth(window.innerWidth);
     };
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    return () => {
+      mounted = false;
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   return (
@@ -313,14 +351,18 @@ function SkillPage({ isBatterySavingOn, isWindowModalVisible }) {
               <strong>My TechStack</strong>
             </motion.p>
             <motion.div
+              ref={carouselSectionRef}
               className="skill-carousel-container"
-              // key={`skill-carousel-${skillScreenWidth}`}
               variants={isBatterySavingOn ? {} : zoomIn(0)}
               initial="hidden"
               whileInView="show"
               exit="hidden"
             >
-              <SkillSection isBatterySavingOn={isBatterySavingOn} />
+              {carouselInView ? (
+                <SkillSection isBatterySavingOn={isBatterySavingOn} />
+              ) : (
+                <div style={{ minHeight: 200 }} aria-hidden="true" />
+              )}
             </motion.div>
             <motion.p
               className="skill-paragraph"

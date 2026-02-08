@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { zoomIn } from "../../services/variants";
 import { styled, keyframes } from "@stitches/react";
 import "../../styles/ProjectPage.css";
-import GradientBG from "./GradientBG"; // Adjust the path as necessary
 import ProjectsListView from "./ProjectsListView";
 
 function ProjectPage({
@@ -15,9 +14,6 @@ function ProjectPage({
   const [showFeatured, setShowFeatured] = useState(false);
   return (
     <motion.section className="project-page-container" id="projects">
-      {/* <div className="gradient-bg-container">
-        <GradientBG />
-      </div> */}
       <motion.div
         className="project-page-div"
         style={

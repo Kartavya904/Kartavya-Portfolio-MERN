@@ -64,16 +64,27 @@ const WindowModal = ({
   stopGenerating,
 }) => {
   const modalRef = useRef(null);
-  // Toast state
+  const toastMountedRef = useRef(true);
   const [toasts, setToasts] = useState([]);
+
+  useEffect(() => {
+    toastMountedRef.current = true;
+    return () => {
+      toastMountedRef.current = false;
+    };
+  }, []);
 
   // every 10 seconds, wipe out all toasts
   useEffect(() => {
+    let mounted = true;
     const interval = setInterval(() => {
+      if (!mounted) return;
       setToasts([]);
     }, 10_000);
-
-    return () => clearInterval(interval);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   // Helpers to add/remove toasts
@@ -85,7 +96,9 @@ const WindowModal = ({
       }
       const id = Date.now();
       // schedule removal
-      setTimeout(() => removeToast(id), 1500);
+      setTimeout(() => {
+        if (toastMountedRef.current) removeToast(id);
+      }, 1500);
       return [...prev, { id, message, position }];
     });
   };

@@ -220,10 +220,25 @@ const Root = () => {
   const [isReady, setIsReady] = useState(false);
   const [isBatterySavingOn, setIsBatterySavingOn] = useState(false);
   const [appMountDelayDone, setAppMountDelayDone] = useState(false);
+  const mountedRef = React.useRef(true);
   const initialUrlResult = React.useMemo(() => getInitialUrlResult(), []);
 
+  React.useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   useEffect(() => {
-    const t = setTimeout(() => setAppMountDelayDone(true), 400);
+    const t = setTimeout(() => {
+      try {
+        if (mountedRef.current) setAppMountDelayDone(true);
+      } catch (e) {
+        if (process.env.NODE_ENV !== "production")
+          console.warn("[Root appMountDelayDone]", e);
+      }
+    }, 400);
     return () => clearTimeout(t);
   }, []);
 
@@ -248,7 +263,14 @@ const Root = () => {
         <Loading
           isBatterySavingOn={isBatterySavingOn}
           setIsBatterySavingOn={setIsBatterySavingOn}
-          onComplete={() => setIsReady(true)}
+          onComplete={() => {
+            try {
+              if (mountedRef.current) setIsReady(true);
+            } catch (e) {
+              if (process.env.NODE_ENV !== "production")
+                console.warn("[Root onComplete]", e);
+            }
+          }}
         />
       )}
     </>

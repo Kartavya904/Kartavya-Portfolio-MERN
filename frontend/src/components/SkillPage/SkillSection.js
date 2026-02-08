@@ -33,74 +33,73 @@ const PauseTimer = ({
   const [isVisible, setIsVisible] = useState(isSmallWidth ? true : false);
 
   useEffect(() => {
+    let mounted = true;
     const handleResize = () => {
+      if (!mounted) return;
       setIsSmallWidth(window.innerWidth <= 768);
     };
-
-    // Add resize listener
     window.addEventListener("resize", handleResize);
-
-    // Cleanup listener on unmount
     return () => {
+      mounted = false;
       window.removeEventListener("resize", handleResize);
     };
   }, []);
 
   useEffect(() => {
+    let mounted = true;
     let startTime = performance.now();
     let interval;
     let hoverTimeout;
     let isHovered = false;
 
     const handleHover = () => {
-      setIsVisible(true); // Show PauseTimer
-      glideRef.current.pause(); // Pause Glide autoplay
-      setCountdown(5.0); // Reset countdown to 5.00
+      if (!mounted) return;
+      setIsVisible(true);
+      glideRef.current?.pause();
+      setCountdown(5.0);
       isHovered = true;
-
-      // Clear auto-hide timeout if already running
       if (hoverTimeout) clearTimeout(hoverTimeout);
-
-      // Set auto-hide timeout for 7 seconds
       hoverTimeout = setTimeout(() => {
-        setIsVisible(false); // Hide PauseTimer
+        if (!mounted) return;
+        setIsVisible(false);
         isHovered = false;
-        glideRef.current.play(); // Resume Glide autoplay
+        glideRef.current?.play();
       }, 11000);
     };
 
     const handleUnhover = () => {
       isHovered = false;
-      glideRef.current.play(); // Resume Glide autoplay
-      startTime = performance.now(); // Reset start time
+      glideRef.current?.play();
+      startTime = performance.now();
     };
 
     const glideElement = document.querySelector(".glide");
 
-    if (autoplay) {
+    if (autoplay && glideElement) {
       glideElement.addEventListener("mouseenter", handleHover);
       glideElement.addEventListener("mouseleave", handleUnhover);
 
       interval = setInterval(() => {
+        if (!mounted) return;
         if (isHovered) {
-          setCountdown(4.0); // Keep countdown at 5.00
+          setCountdown(4.0);
         } else {
           const elapsed = performance.now() - startTime;
           const remaining = Math.max(4 - elapsed / 1000, 0);
-          setCountdown(remaining.toFixed(1)); // Update countdown
-
-          if (remaining <= 0) {
-            startTime = performance.now(); // Reset start time
-          }
+          setCountdown(remaining.toFixed(1));
+          if (remaining <= 0) startTime = performance.now();
         }
       }, 100);
     }
 
     return () => {
-      clearInterval(interval); // Cleanup interval
-      clearTimeout(hoverTimeout); // Cleanup timeout
-      glideElement.removeEventListener("mouseenter", handleHover);
-      glideElement.removeEventListener("mouseleave", handleUnhover);
+      mounted = false;
+      clearInterval(interval);
+      clearTimeout(hoverTimeout);
+      if (glideElement) {
+        glideElement.removeEventListener("mouseenter", handleHover);
+        glideElement.removeEventListener("mouseleave", handleUnhover);
+      }
     };
   }, [autoplay, glideRef, setCountdown]);
 
@@ -186,7 +185,8 @@ const SkillSection = ({ isBatterySavingOn }) => {
     const glideElement = document.querySelector(".glide");
     if (!glideElement) return;
 
-    glideRef.current = new Glide(".glide", {
+    let mounted = true;
+    const glide = new Glide(".glide", {
       type: "carousel",
       startAt: 0,
       perView: 1,
@@ -197,9 +197,43 @@ const SkillSection = ({ isBatterySavingOn }) => {
       rewind: true,
     });
 
-    glideRef.current.mount();
+    const onRunAfter = () => {
+      try {
+        if (mounted && glide != null) setActiveIndex(glide.index);
+      } catch (e) {
+        if (process.env.NODE_ENV !== "production")
+          console.warn("[Glide run.after]", e);
+      }
+    };
+    const onMountAfter = () => {
+      try {
+        if (mounted && glide != null) setActiveIndex(glide.index);
+      } catch (e) {
+        if (process.env.NODE_ENV !== "production")
+          console.warn("[Glide mount.after]", e);
+      }
+    };
+    glide.on("run.after", onRunAfter);
+    glide.on("mount.after", onMountAfter);
 
-    return () => glideRef.current.destroy();
+    glideRef.current = glide;
+    try {
+      glide.mount();
+    } catch (e) {
+      if (process.env.NODE_ENV !== "production")
+        console.warn("[Glide mount]", e);
+    }
+
+    return () => {
+      mounted = false;
+      glideRef.current = null;
+      try {
+        glide.destroy();
+      } catch (e) {
+        if (process.env.NODE_ENV !== "production")
+          console.warn("[Glide destroy]", e);
+      }
+    };
   }, [skillCategories, autoplay, isMediumWidth, isSmallWidth]);
 
   return (
@@ -228,123 +262,132 @@ const SkillSection = ({ isBatterySavingOn }) => {
         <div className="glide">
           <div className="glide__track" data-glide-el="track">
             <ul className="glide__slides">
-              {skillCategories.map((category) => (
-                <li className="glide__slide" key={`${category.title}-${1}`}>
-                  <motion.div
-                    className="skill-card"
-                    viewport={{ amount: "all" }}
-                  >
-                    <motion.h2
-                      className="skill-card-title"
-                      variants={isBatterySavingOn ? {} : zoomIn(0.1)}
-                      initial="hidden"
-                      whileInView="show"
-                      exit="hidden"
+              {skillCategories.map((category, index) => (
+                <li className="glide__slide" key={`${category.title}-${index}`}>
+                  {index === activeIndex ? (
+                    <motion.div
+                      className="skill-card"
+                      viewport={{ amount: "all" }}
                     >
-                      {category.title}
-                    </motion.h2>
-                    <motion.p
-                      className="skill-card-description"
-                      variants={isBatterySavingOn ? {} : zoomIn(0.1)}
-                      initial="hidden"
-                      whileInView="show"
-                      exit="hidden"
-                    >
-                      {category.description}
-                    </motion.p>
-                    <div
-                      className="skill-items"
-                      style={
-                        {
-                          // gap: `${95 / category.skills.length}%`,
+                      <motion.h2
+                        className="skill-card-title"
+                        variants={isBatterySavingOn ? {} : zoomIn(0.1)}
+                        initial="hidden"
+                        whileInView="show"
+                        exit="hidden"
+                      >
+                        {category.title}
+                      </motion.h2>
+                      <motion.p
+                        className="skill-card-description"
+                        variants={isBatterySavingOn ? {} : zoomIn(0.1)}
+                        initial="hidden"
+                        whileInView="show"
+                        exit="hidden"
+                      >
+                        {category.description}
+                      </motion.p>
+                      <div
+                        className="skill-items"
+                        style={
+                          {
+                            // gap: `${95 / category.skills.length}%`,
+                          }
                         }
-                      }
-                    >
-                      {category.skills.map((skill, skillIndex) => (
-                        <motion.div
-                          key={`${category.title}-${skillIndex}`}
-                          className="skill-item"
-                          variants={
-                            isBatterySavingOn ? {} : zoomIn(skillIndex * 0.075)
-                          } // Add consistent stagger effect
-                          initial="hidden"
-                          whileInView="show"
-                          exit="hidden"
-                        >
-                          <motion.img
-                            src={icons[skill.logo]}
-                            alt=""
-                            className={`skill-card-icon`}
-                            style={{
-                              boxShadow: `0 0 ${
-                                window.innerWidth > 768 ? 7.5 : 2.5
-                              }px ${
-                                proficiencyColor[skill.proficiency] ||
-                                proficiencyColor.default
-                              }, 
-                0 0 ${window.innerWidth > 768 ? 12.5 : 5}px ${
-                  proficiencyColor[skill.proficiency] ||
-                  proficiencyColor.default
-                }`,
-                            }}
+                      >
+                        {category.skills.map((skill, skillIndex) => (
+                          <motion.div
+                            key={`${category.title}-${skillIndex}`}
+                            className="skill-item"
                             variants={
                               isBatterySavingOn
                                 ? {}
-                                : fadeIn(
-                                    "right",
-                                    50, // Reduced size for a more subtle animation
-                                    skillIndex * 0.075, // Stagger delay for each skill
-                                    0.4, // Shorter duration for smoother animations
-                                  )
-                            }
-                            initial="hidden"
-                            whileInView="show"
-                            exit="hidden"
-                            animate={{
-                              boxShadow: [
-                                `0 0 ${window.innerWidth > 768 ? 7.5 : 2.5}px ${
-                                  proficiencyColor[skill.proficiency] ||
-                                  proficiencyColor.default
-                                }`,
-                                `0 0 ${window.innerWidth > 768 ? 12.5 : 5}px ${
-                                  proficiencyColor[skill.proficiency] ||
-                                  proficiencyColor.default
-                                }`,
-                                `0 0 ${window.innerWidth > 768 ? 7.5 : 2.5}px ${
-                                  proficiencyColor[skill.proficiency] ||
-                                  proficiencyColor.default
-                                }`,
-                              ],
-                              transition: {
-                                duration: 1, // Duration for the boxShadow animation
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                              },
-                            }}
-                          />
-
-                          <motion.span
-                            className={`skill-card-name ${skill.proficiency}`}
-                            variants={
-                              isBatterySavingOn
-                                ? {}
-                                : fadeIn(
-                                    "left",
-                                    50, // Reduced size for a more subtle animation
-                                    skillIndex * 0.075, // Match stagger delay
-                                    0.4, // Match duration for consistent animations
-                                  )
-                            }
+                                : zoomIn(skillIndex * 0.075)
+                            } // Add consistent stagger effect
                             initial="hidden"
                             whileInView="show"
                             exit="hidden"
                           >
-                            {skill.name}
-                          </motion.span>
-                        </motion.div>
-                      ))}
-                    </div>
-                  </motion.div>
+                            <motion.img
+                              src={icons[skill.logo]}
+                              alt=""
+                              className={`skill-card-icon`}
+                              style={{
+                                boxShadow: `0 0 ${
+                                  window.innerWidth > 768 ? 7.5 : 2.5
+                                }px ${
+                                  proficiencyColor[skill.proficiency] ||
+                                  proficiencyColor.default
+                                }, 
+                0 0 ${window.innerWidth > 768 ? 12.5 : 5}px ${
+                  proficiencyColor[skill.proficiency] ||
+                  proficiencyColor.default
+                }`,
+                              }}
+                              variants={
+                                isBatterySavingOn
+                                  ? {}
+                                  : fadeIn(
+                                      "right",
+                                      50, // Reduced size for a more subtle animation
+                                      skillIndex * 0.075, // Stagger delay for each skill
+                                      0.4, // Shorter duration for smoother animations
+                                    )
+                              }
+                              initial="hidden"
+                              whileInView="show"
+                              exit="hidden"
+                              animate={{
+                                boxShadow: [
+                                  `0 0 ${window.innerWidth > 768 ? 7.5 : 2.5}px ${
+                                    proficiencyColor[skill.proficiency] ||
+                                    proficiencyColor.default
+                                  }`,
+                                  `0 0 ${window.innerWidth > 768 ? 12.5 : 5}px ${
+                                    proficiencyColor[skill.proficiency] ||
+                                    proficiencyColor.default
+                                  }`,
+                                  `0 0 ${window.innerWidth > 768 ? 7.5 : 2.5}px ${
+                                    proficiencyColor[skill.proficiency] ||
+                                    proficiencyColor.default
+                                  }`,
+                                ],
+                                transition: {
+                                  duration: 1, // Duration for the boxShadow animation
+                                  repeat: Infinity,
+                                  ease: "easeInOut",
+                                },
+                              }}
+                            />
+
+                            <motion.span
+                              className={`skill-card-name ${skill.proficiency}`}
+                              variants={
+                                isBatterySavingOn
+                                  ? {}
+                                  : fadeIn(
+                                      "left",
+                                      50, // Reduced size for a more subtle animation
+                                      skillIndex * 0.075, // Match stagger delay
+                                      0.4, // Match duration for consistent animations
+                                    )
+                              }
+                              initial="hidden"
+                              whileInView="show"
+                              exit="hidden"
+                            >
+                              {skill.name}
+                            </motion.span>
+                          </motion.div>
+                        ))}
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <div
+                      className="skill-card skill-card-placeholder"
+                      aria-hidden="true"
+                    />
+                  )}
                 </li>
               ))}
             </ul>

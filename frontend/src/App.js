@@ -373,16 +373,23 @@ function App({
   }, [latestAIId]);
 
   useEffect(() => {
+    let mounted = true;
     let rafId = null;
     const onScroll = () => {
       if (rafId !== null) return;
       rafId = requestAnimationFrame(() => {
         rafId = null;
-        setScrolled(window.scrollY > 100);
+        try {
+          if (mounted) setScrolled(window.scrollY > 100);
+        } catch (e) {
+          if (process.env.NODE_ENV !== "production")
+            console.warn("[App scroll]", e);
+        }
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
+      mounted = false;
       if (rafId !== null) cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", onScroll);
     };

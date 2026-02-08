@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Carousel from "react-multi-carousel";
 import "../../styles/SkillGraph.css";
 import { motion } from "framer-motion";
@@ -44,6 +44,30 @@ const responsive = {
   tablet: { breakpoint: { max: 768, min: 576 }, items: 1 },
   mobile: { breakpoint: { max: 576, min: 0 }, items: 1 },
 };
+
+/** Map carousel clone index to our logical slide index (matches react-multi-carousel clone layout) */
+function cloneIndexToOriginal(currentSlide, childrenLength, slidesToShow) {
+  if (childrenLength <= 0) return 0;
+  if (childrenLength <= 2 * slidesToShow) return currentSlide % childrenLength;
+  const firstBeginningOfClones = childrenLength - 2 * slidesToShow;
+  const firstEndOfClones = childrenLength - firstBeginningOfClones;
+  const secondBeginningOfClones = childrenLength + firstEndOfClones;
+  const secondEndOfClones =
+    secondBeginningOfClones + Math.min(2 * slidesToShow, childrenLength);
+  if (currentSlide < firstEndOfClones)
+    return firstBeginningOfClones + currentSlide;
+  if (
+    currentSlide >= secondBeginningOfClones &&
+    currentSlide < secondEndOfClones
+  )
+    return currentSlide - secondBeginningOfClones;
+  if (
+    currentSlide >= firstEndOfClones &&
+    currentSlide < secondBeginningOfClones
+  )
+    return currentSlide - firstEndOfClones;
+  return currentSlide % childrenLength;
+}
 
 const SkillGraph = ({ givenData, isBatterySavingOn }) => {
   const numericScores = givenData.Scores.map((score) => Number(score) || 0);
@@ -157,6 +181,26 @@ const SkillGraph = ({ givenData, isBatterySavingOn }) => {
 
 const SkillGraphCarousel = ({ skills, isBatterySavingOn }) => {
   const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+  const mountedRef = useRef(true);
+  const n = skills.length;
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  const syncSlideIndex = (currentSlide, slidesToShow = 1) => {
+    try {
+      if (!n || !mountedRef.current) return;
+      setCurrentSlideIndex(cloneIndexToOriginal(currentSlide, n, slidesToShow));
+    } catch (e) {
+      if (process.env.NODE_ENV !== "production")
+        console.warn("[SkillGraphCarousel syncSlideIndex]", e);
+    }
+  };
 
   useEffect(() => {
     let debounceTimer = null;
@@ -165,7 +209,7 @@ const SkillGraphCarousel = ({ skills, isBatterySavingOn }) => {
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         debounceTimer = null;
-        setScreenWidth(window.innerWidth);
+        if (mountedRef.current) setScreenWidth(window.innerWidth);
       }, RESIZE_DEBOUNCE_MS);
     };
     window.addEventListener("resize", handleResize);
@@ -179,15 +223,20 @@ const SkillGraphCarousel = ({ skills, isBatterySavingOn }) => {
     <Carousel
       key={`skill-graph-${screenWidth}`}
       responsive={responsive}
-      autoPlaySpeed={3000}
       infinite
       className="skill-slider"
       minimumTouchDrag={80}
       pauseOnHover
       customLeftArrow={<CustomLeftArrow />}
       customRightArrow={<CustomRightArrow />}
+      beforeChange={(nextSlide, { slidesToShow }) =>
+        syncSlideIndex(nextSlide, slidesToShow)
+      }
+      afterChange={(previousSlide, { currentSlide, slidesToShow }) =>
+        syncSlideIndex(currentSlide, slidesToShow)
+      }
     >
-      {skills.map((eachSkill) => (
+      {skills.map((eachSkill, index) => (
         <motion.div
           className="item"
           key={eachSkill.id || eachSkill.skillTitle}
@@ -196,18 +245,24 @@ const SkillGraphCarousel = ({ skills, isBatterySavingOn }) => {
           whileInView="show"
           exit="hidden"
         >
-          <motion.div
-            className="skill-graph"
-            initial={isBatterySavingOn ? {} : { scale: 1 }}
-            whileHover={isBatterySavingOn ? {} : { scale: 1.01 }}
-          >
-            <SkillGraph
-              givenData={eachSkill}
-              isBatterySavingOn={isBatterySavingOn}
-            />
-          </motion.div>
-          <h5 className="skill-title">{eachSkill.skillTitle}</h5>
-          <p className="skill-description">{eachSkill.skillDescription}</p>
+          {index === currentSlideIndex ? (
+            <>
+              <motion.div
+                className="skill-graph"
+                initial={isBatterySavingOn ? {} : { scale: 1 }}
+                whileHover={isBatterySavingOn ? {} : { scale: 1.01 }}
+              >
+                <SkillGraph
+                  givenData={eachSkill}
+                  isBatterySavingOn={isBatterySavingOn}
+                />
+              </motion.div>
+              <h5 className="skill-title">{eachSkill.skillTitle}</h5>
+              <p className="skill-description">{eachSkill.skillDescription}</p>
+            </>
+          ) : (
+            <div className="skill-graph-placeholder" aria-hidden="true" />
+          )}
         </motion.div>
       ))}
     </Carousel>

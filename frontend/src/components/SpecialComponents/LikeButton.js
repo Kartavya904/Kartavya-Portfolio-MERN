@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import { styled, keyframes } from "@stitches/react";
 import { FaThumbsUp, FaRegThumbsUp } from "react-icons/fa";
@@ -112,7 +112,7 @@ const Toast = ({ message, type }) => {
     <div className={`toast-notification ${type === "error" ? "error" : ""}`}>
       {message}
     </div>,
-    document.body
+    document.body,
   );
 };
 
@@ -122,15 +122,23 @@ const LikeButton = ({ type, title, onLikeSuccess }) => {
   const [isLiking, setIsLiking] = useState(false);
   const [liked, setLiked] = useState(false);
   const [toast, setToast] = useState(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const handleLike = async () => {
-    // Use a unique key based on the item title (or use an ID if available)
     const storageKey = `liked_${title}`;
 
-    // If the user already liked this item, show an "Already Liked" toast and exit.
     if (localStorage.getItem(storageKey)) {
       setToast({ message: `Already Liked: ${title}`, type: "info" });
-      setTimeout(() => setToast(null), 3000);
+      setTimeout(() => {
+        if (mountedRef.current) setToast(null);
+      }, 3000);
       return;
     }
 
@@ -142,19 +150,22 @@ const LikeButton = ({ type, title, onLikeSuccess }) => {
         body: JSON.stringify({ type, title }),
       });
       await response.json();
-      setLiked(true);
+      if (mountedRef.current) setLiked(true);
       if (typeof onLikeSuccess === "function") {
         onLikeSuccess();
       }
-      // Record the like in localStorage so it won't be liked again.
       localStorage.setItem(storageKey, "true");
-      setToast({ message: `Liked: ${title}`, type: "success" });
+      if (mountedRef.current)
+        setToast({ message: `Liked: ${title}`, type: "success" });
     } catch (error) {
       console.error("Error while adding like:", error);
-      setToast({ message: `Error liking: ${title}`, type: "error" });
+      if (mountedRef.current)
+        setToast({ message: `Error liking: ${title}`, type: "error" });
     } finally {
-      setIsLiking(false);
-      setTimeout(() => setToast(null), 3000);
+      if (mountedRef.current) setIsLiking(false);
+      setTimeout(() => {
+        if (mountedRef.current) setToast(null);
+      }, 3000);
     }
   };
 

@@ -47,12 +47,16 @@ const NavBar = ({ isBatterySavingOn, addTab, scrolled = false }) => {
   // }, []);
 
   useEffect(() => {
+    let mounted = true;
     const handleResize = () => {
+      if (!mounted) return;
       setScreenWidth(window.innerWidth);
     };
-
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    return () => {
+      mounted = false;
+      window.removeEventListener("resize", handleResize);
+    };
   }, []);
 
   useEffect(() => {
@@ -128,7 +132,9 @@ const NavBar = ({ isBatterySavingOn, addTab, scrolled = false }) => {
 
   // Close menu when clicking outside
   useEffect(() => {
+    let mounted = true;
     const handleClickOutside = (event) => {
+      if (!mounted) return;
       if (
         menuOpen &&
         menuRef.current &&
@@ -137,11 +143,11 @@ const NavBar = ({ isBatterySavingOn, addTab, scrolled = false }) => {
         setMenuOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("touchstart", handleClickOutside);
     window.addEventListener("scroll", handleClickOutside);
     return () => {
+      mounted = false;
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("touchstart", handleClickOutside);
       window.removeEventListener("scroll", handleClickOutside);

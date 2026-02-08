@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Bar } from "react-chartjs-2";
 import {
@@ -116,37 +116,98 @@ const BarChart = ({ topLangs, isBatterySavingOn }) => {
   );
 };
 
+const ioOptions = { threshold: 0.1, rootMargin: "0px 0px 50px 0px" };
+
 export default function SkillsCharts({ topLangs, skills, isBatterySavingOn }) {
+  const column1Ref = useRef(null);
+  const column2Ref = useRef(null);
+  const [column1InView, setColumn1InView] = useState(false);
+  const [column2InView, setColumn2InView] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    const el1 = column1Ref.current;
+    if (!el1) return;
+    const observer = new IntersectionObserver((entries) => {
+      try {
+        if (!mounted) return;
+        for (const entry of entries) setColumn1InView(entry.isIntersecting);
+      } catch (e) {
+        if (process.env.NODE_ENV !== "production")
+          console.warn("[SkillsCharts column1 IO]", e);
+      }
+    }, ioOptions);
+    observer.observe(el1);
+    return () => {
+      mounted = false;
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    const el2 = column2Ref.current;
+    if (!el2) return;
+    const observer = new IntersectionObserver((entries) => {
+      try {
+        if (!mounted) return;
+        for (const entry of entries) setColumn2InView(entry.isIntersecting);
+      } catch (e) {
+        if (process.env.NODE_ENV !== "production")
+          console.warn("[SkillsCharts column2 IO]", e);
+      }
+    }, ioOptions);
+    observer.observe(el2);
+    return () => {
+      mounted = false;
+      observer.disconnect();
+    };
+  }, []);
+
   return (
     <>
-      <motion.div className="last-skill-column column1">
-        <a
-          href="https://github.com/Kartavya904/#topLang"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="github-icon"
-        >
-          <img src={github} alt="GitHub" />
-        </a>
-        <BarChart
-          key={topLangs}
-          topLangs={topLangs}
-          isBatterySavingOn={isBatterySavingOn}
-        />
+      <motion.div
+        ref={column1Ref}
+        className="last-skill-column column1"
+        style={!column1InView ? { minHeight: 280 } : undefined}
+      >
+        {column1InView ? (
+          <>
+            <a
+              href="https://github.com/Kartavya904/#topLang"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="github-icon"
+            >
+              <img src={github} alt="GitHub" />
+            </a>
+            <BarChart
+              key={topLangs}
+              topLangs={topLangs}
+              isBatterySavingOn={isBatterySavingOn}
+            />
+          </>
+        ) : null}
       </motion.div>
-      <motion.div className="last-skill-column column2">
-        <motion.div
-          className="skill-graph-carousel"
-          variants={isBatterySavingOn ? {} : zoomIn(0)}
-          initial="hidden"
-          whileInView="show"
-          exit="hidden"
-        >
-          <SkillGraphCarousel
-            skills={skills}
-            isBatterySavingOn={isBatterySavingOn}
-          />
-        </motion.div>
+      <motion.div
+        ref={column2Ref}
+        className="last-skill-column column2"
+        style={!column2InView ? { minHeight: 280 } : undefined}
+      >
+        {column2InView ? (
+          <motion.div
+            className="skill-graph-carousel"
+            variants={isBatterySavingOn ? {} : zoomIn(0)}
+            initial="hidden"
+            whileInView="show"
+            exit="hidden"
+          >
+            <SkillGraphCarousel
+              skills={skills}
+              isBatterySavingOn={isBatterySavingOn}
+            />
+          </motion.div>
+        ) : null}
       </motion.div>
     </>
   );

@@ -85,11 +85,14 @@ function ProjectsListView({
       titleEl.style.zoom = `${scaleValue}`;
     };
 
+    let mounted = true;
     const handleResize = () => {
+      if (!mounted) return;
       setIsWide(window.innerWidth > 768);
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         debounceTimer = null;
+        if (!mounted) return;
         setLayoutTrigger((prev) => prev + 1);
         updateScale();
       }, RESIZE_DEBOUNCE_MS);
@@ -98,6 +101,7 @@ function ProjectsListView({
     updateScale();
     window.addEventListener("resize", handleResize);
     return () => {
+      mounted = false;
       if (debounceTimer) clearTimeout(debounceTimer);
       window.removeEventListener("resize", handleResize);
     };

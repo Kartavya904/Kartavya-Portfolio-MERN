@@ -107,10 +107,9 @@ const InvolvementTabPage = ({
     );
 
   const n = involvements.length;
-  const prevPrevIndex = (activeSlide - 2 + n) % n;
   const prevIndex = (activeSlide - 1 + n) % n;
   const nextIndex = (activeSlide + 1) % n;
-  const nextNextIndex = (activeSlide + 2) % n;
+  // Only mount the 3 visible slides (prev, active, next); unmount the rest
   const mountedIndices =
     n === 0
       ? []
@@ -118,13 +117,7 @@ const InvolvementTabPage = ({
         ? [0]
         : n === 2
           ? [activeSlide, nextIndex]
-          : [
-              prevPrevIndex,
-              prevIndex,
-              activeSlide,
-              nextIndex,
-              nextNextIndex,
-            ].filter((idx, i, arr) => arr.indexOf(idx) === i);
+          : [prevIndex, activeSlide, nextIndex];
 
   // Advanced swipe detection using swipe power (offset * velocity)
   const swipeConfidenceThreshold = 10000;
@@ -167,11 +160,7 @@ const InvolvementTabPage = ({
                     ? "prev"
                     : index === nextIndex
                       ? "next"
-                      : index === prevPrevIndex
-                        ? "prevPrev"
-                        : index === nextNextIndex
-                          ? "nextNext"
-                          : "hidden";
+                      : "hidden";
               return (
                 <motion.div
                   key={index}

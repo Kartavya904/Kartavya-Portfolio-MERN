@@ -113,10 +113,9 @@ const HonorsTabPage = ({
   };
 
   const n = combinedLength;
-  const prevPrevIndex = (activeSlide - 2 + n) % n;
   const prevIndex = (activeSlide - 1 + n) % n;
   const nextIndex = (activeSlide + 1) % n;
-  const nextNextIndex = (activeSlide + 2) % n;
+  // Only mount the 3 visible slides (prev, active, next); unmount the rest
   const mountedIndices =
     n === 0
       ? []
@@ -124,13 +123,7 @@ const HonorsTabPage = ({
         ? [0]
         : n === 2
           ? [activeSlide, nextIndex]
-          : [
-              prevPrevIndex,
-              prevIndex,
-              activeSlide,
-              nextIndex,
-              nextNextIndex,
-            ].filter((idx, i, arr) => arr.indexOf(idx) === i);
+          : [prevIndex, activeSlide, nextIndex];
 
   // ---------------- Advanced Swipe Logic ----------------
   const swipeConfidenceThreshold = 10000;
@@ -173,11 +166,7 @@ const HonorsTabPage = ({
                     ? "prev"
                     : index === nextIndex
                       ? "next"
-                      : index === prevPrevIndex
-                        ? "prevPrev"
-                        : index === nextNextIndex
-                          ? "nextNext"
-                          : "hidden";
+                      : "hidden";
               return (
                 <motion.div
                   key={`${type}-${index}`}
@@ -254,6 +243,7 @@ const HonorsTabPage = ({
                           }
                           alt=""
                           className="career-image-content"
+                          loading="lazy"
                         />
                       </div>
                       <div className="career-details">

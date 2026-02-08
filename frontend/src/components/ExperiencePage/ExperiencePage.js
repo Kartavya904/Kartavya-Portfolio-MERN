@@ -1,7 +1,6 @@
 import React, { useState, useEffect, memo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { zoomIn } from "../../services/variants";
-import Background from "./Background";
 import InvolvementTabPage from "./InvolvementTabPage";
 import CareerTabPage from "./CareerTabPage";
 import HonorsTabPage from "./HonorsTabPage";
@@ -121,7 +120,6 @@ const ExperiencePage = ({
     <>
       <AnimatePresence>
         <section className="experience-container" id="experience">
-          {/* <Background /> */}
           <motion.div
             className="experience-div"
             variants={isBatterySavingOn ? {} : zoomIn(0)}

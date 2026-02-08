@@ -62,6 +62,14 @@ const AIChatBot = ({
   const [audioCurrent, setAudioCurrent] = useState(0); // seconds elapsed
   const [audioDuration, setAudioDuration] = useState(0); // total seconds
   const timerRef = useRef(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const [showToast, setShowToast] = useState(false);
 
@@ -143,11 +151,10 @@ const AIChatBot = ({
 
     if (clickCount.current >= 5) {
       setIsCooldown(true);
-      clickCount.current = 0; // Reset click count after reaching the limit
+      clickCount.current = 0;
 
-      // End cooldown after 2 seconds
       setTimeout(() => {
-        setIsCooldown(false);
+        if (mountedRef.current) setIsCooldown(false);
       }, 1000);
     }
   };
@@ -171,7 +178,8 @@ const AIChatBot = ({
   // --- Toast logic ---
   useEffect(() => {
     setShowToast(
-      queriesSent >= MAX_QUERIES - TOAST_THRESHOLD && queriesSent <= MAX_QUERIES
+      queriesSent >= MAX_QUERIES - TOAST_THRESHOLD &&
+        queriesSent <= MAX_QUERIES,
     );
   }, [queriesSent]);
 
@@ -203,7 +211,7 @@ const AIChatBot = ({
     const utt = new SpeechSynthesisUtterance(text);
     utt.onend = () => {
       clearInterval(timerRef.current);
-      setAudioPlaying(false);
+      if (mountedRef.current) setAudioPlaying(false);
     };
 
     // start speaking
@@ -213,6 +221,7 @@ const AIChatBot = ({
 
     // start timer to tick current time
     timerRef.current = setInterval(() => {
+      if (!mountedRef.current) return;
       setAudioCurrent((t) => {
         if (t + 0.5 >= duration) {
           clearInterval(timerRef.current);
@@ -236,6 +245,7 @@ const AIChatBot = ({
     setAudioPaused(false);
     // restart timer
     timerRef.current = setInterval(() => {
+      if (!mountedRef.current) return;
       setAudioCurrent((t) => Math.min(t + 0.5, audioDuration));
     }, 500);
   };
@@ -397,14 +407,14 @@ const AIChatBot = ({
                 onClick={() => {
                   // load the saved chat
                   const saved = JSON.parse(
-                    localStorage.getItem("conversationHistory") || "[]"
+                    localStorage.getItem("conversationHistory") || "[]",
                   );
                   setChatHistory(saved);
                   setConversationMemory(
-                    localStorage.getItem("conversationMemory") || ""
+                    localStorage.getItem("conversationMemory") || "",
                   );
                   setQueriesSent(
-                    parseInt(localStorage.getItem("queriesSent") || "0", 10)
+                    parseInt(localStorage.getItem("queriesSent") || "0", 10),
                   );
                   setChatStarted(true);
                 }}
@@ -516,7 +526,7 @@ const AIChatBot = ({
                   setChatStarted(true);
                   localStorage.setItem(
                     "conversationHistory",
-                    JSON.stringify([])
+                    JSON.stringify([]),
                   );
                   localStorage.setItem("conversationMemory", "");
                 }}
@@ -588,8 +598,8 @@ const AIChatBot = ({
                 loading
                   ? "Generating Response..."
                   : listening
-                  ? "Transcribing... Please ask!"
-                  : "Ask any question about me!"
+                    ? "Transcribing... Please ask!"
+                    : "Ask any question about me!"
               }`}
               onKeyDown={(e) => {
                 // Enter=send, Shift+Enter=newline
@@ -924,8 +934,8 @@ const AIChatBot = ({
                 loading
                   ? "Generating Response..."
                   : listening
-                  ? "Transcribing... Please ask!"
-                  : "Ask another question!"
+                    ? "Transcribing... Please ask!"
+                    : "Ask another question!"
               }`}
               className="query-input"
               disabled={loading}

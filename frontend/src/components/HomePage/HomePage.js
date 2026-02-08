@@ -24,7 +24,15 @@ function HomePage({
 }) {
   const [clicked, setClicked] = useState(false);
   const [isCooldown, setIsCooldown] = useState(false);
-  const clickCount = useRef(0); // Use useRef to keep track of click count across renders
+  const clickCount = useRef(0);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
   const [key, setKey] = useState(0); // State to reset the animation on click
   const [frameIndex, setFrameIndex] = useState(0); // Track current frame index
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -84,9 +92,8 @@ function HomePage({
       setIsCooldown(true);
       clickCount.current = 0; // Reset click count after reaching the limit
 
-      // End cooldown after 2 seconds
       setTimeout(() => {
-        setIsCooldown(false);
+        if (mountedRef.current) setIsCooldown(false);
       }, 1000);
     }
   };

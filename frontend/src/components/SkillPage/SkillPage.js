@@ -1,11 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  memo,
-  lazy,
-  Suspense,
-} from "react";
+import React, { useState, useEffect, memo, lazy, Suspense } from "react";
 import { zoomIn, fadeIn } from "../../services/variants";
 import "../../styles/SkillPage.css";
 import SkillSection from "./SkillSection";
@@ -18,56 +11,6 @@ function SkillPage({ isBatterySavingOn, isWindowModalVisible }) {
   const [skillScreenWidth, setSkillScreenWidth] = useState(window.innerWidth);
   const [topLangs, setTopLangs] = useState({ labels: [], data: [] });
   const [skills, setSkills] = useState([]);
-  const [chartsInView, setChartsInView] = useState(false);
-  const [carouselInView, setCarouselInView] = useState(false);
-  const chartsSectionRef = useRef(null);
-  const carouselSectionRef = useRef(null);
-
-  useEffect(() => {
-    let mounted = true;
-    const el = chartsSectionRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        try {
-          if (!mounted) return;
-          for (const entry of entries) setChartsInView(entry.isIntersecting);
-        } catch (e) {
-          if (process.env.NODE_ENV !== "production")
-            console.warn("[SkillPage charts IO]", e);
-        }
-      },
-      { threshold: 0.1, rootMargin: "0px 0px 50px 0px" },
-    );
-    observer.observe(el);
-    return () => {
-      mounted = false;
-      observer.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    let mounted = true;
-    const el = carouselSectionRef.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        try {
-          if (!mounted) return;
-          for (const entry of entries) setCarouselInView(entry.isIntersecting);
-        } catch (e) {
-          if (process.env.NODE_ENV !== "production")
-            console.warn("[SkillPage carousel IO]", e);
-        }
-      },
-      { threshold: 0.1, rootMargin: "0px 0px 50px 0px" },
-    );
-    observer.observe(el);
-    return () => {
-      mounted = false;
-      observer.disconnect();
-    };
-  }, []);
 
   useEffect(() => {
     const loadSkills = async () => {
@@ -345,53 +288,38 @@ function SkillPage({ isBatterySavingOn, isWindowModalVisible }) {
               className="skill-paragraph"
               variants={isBatterySavingOn ? {} : fadeIn("right", 200, 0)}
               initial="hidden"
-              whileInView="show"
+              animate="show"
               exit="hidden"
             >
               <strong>My TechStack</strong>
             </motion.p>
             <motion.div
-              ref={carouselSectionRef}
               className="skill-carousel-container"
               variants={isBatterySavingOn ? {} : zoomIn(0)}
               initial="hidden"
               whileInView="show"
+              viewport={{ once: true }}
               exit="hidden"
             >
-              {carouselInView ? (
-                <SkillSection isBatterySavingOn={isBatterySavingOn} />
-              ) : (
-                <div style={{ minHeight: 200 }} aria-hidden="true" />
-              )}
+              <SkillSection isBatterySavingOn={isBatterySavingOn} />
             </motion.div>
             <motion.p
               className="skill-paragraph"
               variants={isBatterySavingOn ? {} : fadeIn("right", 200, 0)}
               initial="hidden"
-              whileInView="show"
+              animate="show"
               exit="hidden"
             >
               <strong>My Workspace</strong>
             </motion.p>
-            <motion.div className="last-skill-row" ref={chartsSectionRef}>
-              {chartsInView ? (
-                <Suspense
-                  fallback={
-                    <div
-                      className="last-skill-column column1"
-                      style={{ minHeight: 200 }}
-                    />
-                  }
-                >
-                  <SkillsCharts
-                    topLangs={topLangs}
-                    skills={skills}
-                    isBatterySavingOn={isBatterySavingOn}
-                  />
-                </Suspense>
-              ) : (
-                <div style={{ minHeight: 280 }} aria-hidden="true" />
-              )}
+            <motion.div className="last-skill-row">
+              <Suspense fallback={null}>
+                <SkillsCharts
+                  topLangs={topLangs}
+                  skills={skills}
+                  isBatterySavingOn={isBatterySavingOn}
+                />
+              </Suspense>
             </motion.div>
           </motion.div>
         </div>

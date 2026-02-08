@@ -29,7 +29,6 @@ const ExperiencePage = lazy(
 const ProjectPage = lazy(() => import("./components/ProjectPage/ProjectPage"));
 const ContactPage = lazy(() => import("./components/ContactPage/ContactPage"));
 const WindowModal = lazy(() => import("./components/WindowModal/WindowModal"));
-// import { cleanupEventListeners } from "./services/eventListenerRegistry";
 
 const NAVBAR_OFFSET = 52;
 function scrollToSection(sectionId) {
@@ -83,17 +82,6 @@ function App({
     setShowChatTip(false);
     localStorage.setItem("hideAIChatTip", "true");
   };
-
-  // useEffect(() => {
-  //   const cleanupInterval = setInterval(() => {
-  //     // Clean up listeners that haven't been active for over 60 seconds
-  //     const remainingListeners = cleanupEventListeners(1000);
-  //     // Optionally, you can log or set state with the remaining listeners count
-  //     console.log("Remaining listeners:", remainingListeners.length);
-  //   }, 10000);
-
-  //   return () => clearInterval(cleanupInterval);
-  // }, []);
 
   const addTab = useCallback((type, data) => {
     if (!data || typeof data !== "object") {

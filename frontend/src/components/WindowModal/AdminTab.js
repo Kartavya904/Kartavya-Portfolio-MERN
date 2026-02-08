@@ -68,7 +68,7 @@ const AdminTab = ({ loggedIn, setLoggedIn }) => {
         from_phone: "5138377683",
         message: otpMessage,
       },
-      process.env.REACT_APP_EMAILJS_USER_ID
+      process.env.REACT_APP_EMAILJS_USER_ID,
     );
   };
 
@@ -97,6 +97,8 @@ const AdminTab = ({ loggedIn, setLoggedIn }) => {
             {!userVerified ? (
               <>
                 <input
+                  id="admin-username"
+                  name="admin_username"
                   type="text"
                   placeholder="Admin Username"
                   className="login-input"
@@ -111,6 +113,8 @@ const AdminTab = ({ loggedIn, setLoggedIn }) => {
             ) : !otpSent ? (
               <>
                 <input
+                  id="admin-password"
+                  name="admin_password"
                   type="password"
                   placeholder="Admin Password"
                   className="login-input"
@@ -125,6 +129,8 @@ const AdminTab = ({ loggedIn, setLoggedIn }) => {
             ) : (
               <>
                 <input
+                  id="admin-otp"
+                  name="admin_otp"
                   type="text"
                   placeholder="Enter OTP"
                   className="login-input"
@@ -135,6 +141,8 @@ const AdminTab = ({ loggedIn, setLoggedIn }) => {
                 <div className="toggle-container">
                   <label className="switch">
                     <input
+                      id="admin-remember-me"
+                      name="admin_remember_me"
                       type="checkbox"
                       checked={rememberMe}
                       onChange={(e) => setRememberMe(e.target.checked)}

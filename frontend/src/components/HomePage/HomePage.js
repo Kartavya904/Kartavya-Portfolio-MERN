@@ -408,6 +408,8 @@ function HomePage({
                   </motion.button>
                 </motion.div>
                 <input
+                  id="home-ai-query"
+                  name="home-ai-query"
                   ref={inputRef}
                   type="text"
                   value={listening ? interimQuery : query}

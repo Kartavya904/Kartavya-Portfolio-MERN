@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { zoomIn, fadeIn } from "../../services/variants";
 import { styled } from "@stitches/react";
 import "../../styles/AboutPage.css";
-import { SpotlightBG } from "./SpotlightBG";
+import { HexGrid } from "./HexGrid";
 // import AboutImg from "../../../public/Kartavya-Profile-Photo.webp";
 import Resume from "../../assets/Singh_Kartavya_Resume2026.pdf";
 
@@ -57,7 +57,7 @@ function AboutPage({ isBatterySavingOn, isWindowModalVisible, addTab }) {
   };
   return (
     <section className="about-section-container" id="about">
-      <SpotlightBG />
+      <HexGrid />
       <motion.div
         variants={isBatterySavingOn ? {} : zoomIn(0)}
         initial="show"

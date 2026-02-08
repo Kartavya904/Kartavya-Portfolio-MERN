@@ -590,6 +590,8 @@ const AIChatBot = ({
               </motion.button>
             </motion.div>
             <input
+              id="aichat-query-main"
+              name="aichat-query"
               ref={inputRef}
               type="text"
               value={listening ? interimQuery : query}
@@ -926,6 +928,8 @@ const AIChatBot = ({
               </button>
             </motion.div>
             <input
+              id="aichat-query-followup"
+              name="aichat-query-followup"
               ref={inputRef}
               type="text"
               value={listening ? interimQuery : query}

@@ -204,9 +204,6 @@ function ProjectsListView({
   // Sticky header: run only after user stops scrolling (debounce) so scroll stays smooth.
   // Uses refs instead of querySelector; behavior unchanged.
   useEffect(() => {
-    let debounceTimer = null;
-    const STICKY_DEBOUNCE_MS = 120;
-
     const runStickyLogic = () => {
       const header = titleRef.current;
       const lastCard = parentRef.current?.lastElementChild;
@@ -220,20 +217,9 @@ function ProjectsListView({
       if (newTop) header.style.top = newTop;
     };
 
-    const handleScroll = () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        debounceTimer = null;
-        runStickyLogic();
-      }, STICKY_DEBOUNCE_MS);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("scroll", runStickyLogic, { passive: true });
     runStickyLogic(); // initial state when projects section is in view
-    return () => {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", runStickyLogic);
   }, []);
 
   // Recalculate layout whenever projects, battery mode, or layoutTrigger changes. Uses refs; runs in rAF to avoid blocking.

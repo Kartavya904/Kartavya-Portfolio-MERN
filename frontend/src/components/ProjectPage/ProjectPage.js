@@ -1,9 +1,16 @@
 import React, { useState, memo } from "react";
 import { motion } from "framer-motion";
-import { zoomIn } from "../../services/variants";
 import { styled, keyframes } from "@stitches/react";
 import "../../styles/ProjectPage.css";
 import ProjectsListView from "./ProjectsListView";
+
+// Opacity-only entrance so parent never gets transform — keeps position:sticky working on title/cards
+const projectPageVariants = {
+  show: {
+    opacity: 1,
+    transition: { duration: 0.4, delay: 0 },
+  },
+};
 
 function ProjectPage({
   addTab,
@@ -21,10 +28,9 @@ function ProjectPage({
             ? { opacity: 0, transition: "opacity 0.5s ease-in-out" }
             : { opacity: 1, transition: "opacity 0.5s ease-in-out" }
         }
-        variants={isBatterySavingOn ? {} : zoomIn(0)}
+        variants={isBatterySavingOn ? {} : projectPageVariants}
         initial="show"
         whileInView="show"
-        exit="hidden"
         viewport={{ once: true }}
       >
         <ProjectsListView
